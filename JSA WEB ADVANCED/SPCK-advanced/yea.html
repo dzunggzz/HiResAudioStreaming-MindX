@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tidal clone lol</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-950 text-gray-100 font-sans flex flex-col min-h-screen">
+
+  <header class="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-950/50 backdrop-blur">
+    <input id="searchInput" type="text" placeholder="Search for songs..." 
+           class="bg-neutral-800 px-4 py-2 rounded-lg w-full max-w-md outline-none text-sm placeholder-gray-500" />
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" id="resultsGrid">
+    <p class="text-gray-400 col-span-full text-center" id="placeholder">search for any song to begin</p>
+  </main>
+
+  <footer class="fixed bottom-0 left-0 w-full bg-neutral-900 border-t border-neutral-800">
+    <div class="flex items-center justify-between px-6 py-3">
+      <div class="flex items-center gap-3 w-1/3">
+        <img id="albumArt" src="" class="w-14 h-14 rounded-lg object-cover" />
+        <div>
+          <h4 id="songTitle" class="font-semibold text-sm">—</h4>
+          <p id="songArtist" class="text-gray-400 text-xs">—</p>
+        </div>
+      </div>
+
+      
+      <div class="flex flex-col items-center gap-1 w-1/3">
+        <div class="flex items-center gap-4">
+          <button id="prevBtn" class="text-gray-400 hover:text-white text-lg">⏮</button>
+          <button id="playBtn" class="text-white text-2xl">▶️</button>
+          <button id="nextBtn" class="text-gray-400 hover:text-white text-lg">⏭</button>
+        </div>
+        <div class="flex items-center gap-2 w-full">
+          <span id="currentTime" class="text-xs text-gray-500">0:00</span>
+          <div class="flex-1 h-1 bg-neutral-700 rounded-full overflow-hidden">
+            <div id="progressBar" class="w-0 h-full bg-blue-500 transition-all"></div>
+          </div>
+          <span id="duration" class="text-xs text-gray-500">0:00</span>
+        </div>
+      </div>
+
+      
+      <div class="flex items-center justify-end gap-4 w-1/3">
+        <div class="flex items-center gap-2 w-28">
+          <span class="text-gray-400 text-sm">🔊</span>
+          <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.7" class="w-full accent-gray-200" />
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <audio id="audio"></audio>
+
+  <script src="./newAPI.js"></script>
+</body>
+</html>
