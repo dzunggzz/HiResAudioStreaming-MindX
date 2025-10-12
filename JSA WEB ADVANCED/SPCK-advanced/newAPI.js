@@ -15,6 +15,7 @@ const progressBar = document.getElementById("progressBar");
 const currentTimeEl = document.getElementById("currentTime");
 const durationEl = document.getElementById("duration");
 const volumeSlider = document.getElementById("volumeSlider");
+const progressContainer = document.getElementById("progressContainer");
 
 let currentList = [];
 let currentSong = 0;
@@ -80,8 +81,9 @@ async function playSong(index) {
   isPlaying = true;
   playBtn.textContent = "⏸️";
 
-  console.log(streamData)
-  console.log(currentList[index].album.cover)
+  console.log('currentList[index]', currentList[index])
+  console.log('streamData', streamData)
+  console.log('currentList[index].album.cover', currentList[index].album.cover)
 }
 
 playBtn.addEventListener("click", () => {
@@ -119,3 +121,13 @@ function formatTime(sec) {
   const s = Math.floor(sec % 60);
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
+
+progressContainer.addEventListener("click", (e) => {
+  if (audio.duration) {
+    const clickX = e.offsetX;
+    const width = progressContainer.clientWidth;
+    const duration = audio.duration;
+    
+    audio.currentTime = (clickX / width) * duration;
+  }
+});
