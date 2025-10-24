@@ -1,4 +1,5 @@
-const API_BASE = "https://tidal.401658.xyz";
+const API_BASE = "https://hifi.401658.xyz";
+const IMAGE_API_BASE = "https://resources.tidal.com/images/";
 
 const searchInput = document.getElementById("searchInput");
 const resultsGrid = document.getElementById("resultsGrid");
