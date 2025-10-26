@@ -12,4 +12,4 @@ Chất lượng âm thanh: HI-RES, HI-RES-LOSSLESS, LOSSLESS, HIGH, LOW. Tối �
 - [ ] Thêm lyrics
 - [ ] Fix 30 zillions bugs
 
-![UI](/images/UI.png)
+![UI](UI.png)
