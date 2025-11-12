@@ -46,6 +46,38 @@ closeQueueBtn.addEventListener("click", () => {
   queuePanel.style.display = "none";
 });
 
+shuffleBtn.addEventListener("click", () => {
+  if (queue.length <= 1) return;
+
+  const currentSongItem = queue[currentSong];
+  const remainingSongs = queue.filter((_, index) => index !== currentSong);
+
+  for (let i = remainingSongs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [remainingSongs[i], remainingSongs[j]] = [remainingSongs[j], remainingSongs[i]];
+  }
+
+  queue = [currentSongItem, ...remainingSongs];
+  currentSong = 0;
+
+  renderQueue();
+});
+
+clearBtn.addEventListener("click", () => {
+  queue = [];
+  currentSong = 0;
+  isPlaying = false;
+  audio.pause();
+  audio.src = "";
+  albumArt.src = "https://placehold.co/56x56";
+  songTitle.textContent = "—";
+  songArtist.textContent = "—";
+  document.getElementById("albumTitle").textContent = "—";
+  document.getElementById("qualityLabel").textContent = "—";
+  updatePlayButton(false);
+  renderQueue();
+});
+
 async function searchSongs(query) {
   resultsGrid.innerHTML = `<p id="placeholder">Searching "${query}"...</p>`;
   try {
@@ -266,3 +298,4 @@ document.getElementById("progressContainer").addEventListener("click", (e) => {
     audio.currentTime = (clickX / width) * duration;
   }
 });
+
