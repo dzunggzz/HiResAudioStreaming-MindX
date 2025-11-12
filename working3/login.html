@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login/register</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container" id="login-container">
+            <h1>login</h1>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="username" required>
+                <input type="password" id="login-password" placeholder="password" required>
+                <button type="submit">login</button>
+            </form>
+            <p>don't have an account? <a href="#" id="show-register">register here</a></p>
+        </div>
+
+        <div class="form-container" id="register-container" style="display: none;">
+            <h1>register</h1>
+            <form id="register-form">
+                <input type="text" id="register-username" placeholder="choose a username" required>
+                <input type="password" id="register-password" placeholder="choose a password" required>
+                <button type="submit">register</button>
+            </form>
+            <p>already have an account? <a href="#" id="show-login">login here</a></p>
+        </div>
+        
+        <div class="guest-container">
+            <button id="guest-login">continue as guest</button>
+        </div>
+
+        <p id="error-message" class="error"></p>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>
