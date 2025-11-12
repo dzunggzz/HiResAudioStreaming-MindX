@@ -1,4 +1,4 @@
-const API_BASE = "https://hifi.401658.xyz";
+const API_BASE = "https://vogel.qqdl.site";
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
 
 const searchInput = document.getElementById("searchInput");
@@ -248,3 +248,4 @@ progressContainer.addEventListener("click", (e) => {
     audio.currentTime = (clickX / width) * duration;
   }
 });
+
