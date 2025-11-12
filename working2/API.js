@@ -27,6 +27,8 @@ let isPlaying = false;
 const searchBtn = document.getElementById("searchBtn");
 const queuePanel = document.getElementById("queuePanel");
 const closeQueueBtn = document.getElementById("closeQueueBtn");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const clearBtn = document.getElementById("clearBtn");
 const queueCount = document.getElementById("queueCount");
 const queueLength = document.getElementById("queueLength");
 const queueListContainer = document.getElementById("queueListContainer");
@@ -141,6 +143,11 @@ function displayResults(songs) {
 function renderQueue() {
   queueCount.textContent = queue.length;
   queueLength.textContent = queue.length;
+
+  shuffleBtn.disabled = queue.length <= 1;
+  shuffleBtn.style.opacity = queue.length <= 1 ? "0.5" : "1";
+  clearBtn.disabled = queue.length === 0;
+  clearBtn.style.opacity = queue.length === 0 ? "0.5" : "1";
 
   if (queue.length === 0) {
     queueListContainer.innerHTML =
@@ -298,4 +305,3 @@ document.getElementById("progressContainer").addEventListener("click", (e) => {
     audio.currentTime = (clickX / width) * duration;
   }
 });
-
