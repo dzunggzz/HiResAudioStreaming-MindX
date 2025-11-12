@@ -112,10 +112,10 @@ function displayResults(songs) {
       song.title
     }" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-          <h3 class="truncate font-semibold text-white group-hover:text-blue-400">${
+          <h3 class="break-words font-semibold text-white group-hover:text-blue-400">${
             song.title
           }</h3>
-          <a class="truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+          <a class="break-words text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
             song.artist.name
           }</a>
           <p class="text-xs text-gray-500">${
