@@ -23,6 +23,7 @@ const searchBtn = document.getElementById("searchBtn");
 const trackSearchTab = document.getElementById("trackSearchTab");
 const artistSearchTab = document.getElementById("artistSearchTab");
 const topTracksTab = document.getElementById("topTracksTab");
+const favoritesTab = document.getElementById("favoritesTab");
 const topTracksBadge = document.getElementById("topTracksBadge");
 const queuePanel = document.getElementById("queuePanel");
 const closeQueueBtn = document.getElementById("closeQueueBtn");
@@ -36,25 +37,30 @@ let currentList = [];
 let queue = [];
 let currentSong = 0;
 let isPlaying = false;
-let currentSearchMode = 'tracks'; 
+let currentSearchMode = 'tracks';
 let topTracksData = null;
 let topTracksLastUpdated = null;
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 
 trackSearchTab.addEventListener("click", () => switchSearchMode('tracks'));
 artistSearchTab.addEventListener("click", () => switchSearchMode('artists'));
 topTracksTab.addEventListener("click", () => switchSearchMode('topTracks'));
+favoritesTab.addEventListener("click", () => switchSearchMode('favorites'));
 
 function switchSearchMode(mode) {
     currentSearchMode = mode;
-    
+
     updateTabStyling();
-    
+
     resultsGrid.innerHTML = '';
     currentList = [];
-    
+
     if (mode === 'topTracks') {
         searchInput.style.display = 'none';
         loadTopTracks();
+    } else if (mode === 'favorites') {
+        searchInput.style.display = 'none';
+        displayFavorites();
     } else {
         searchInput.style.display = 'block';
         searchInput.placeholder = mode === 'tracks' ? "Search for tracks..." : "Search for artists...";
@@ -65,9 +71,10 @@ function updateTabStyling() {
     const tabs = [
         { tab: trackSearchTab, mode: 'tracks' },
         { tab: artistSearchTab, mode: 'artists' },
-        { tab: topTracksTab, mode: 'topTracks' }
+        { tab: topTracksTab, mode: 'topTracks' },
+        { tab: favoritesTab, mode: 'favorites' }
     ];
-    
+
     tabs.forEach(({ tab, mode }) => {
         if (mode === currentSearchMode) {
             tab.classList.add('border-blue-500', 'text-blue-500');
@@ -80,15 +87,15 @@ function updateTabStyling() {
 }
 
 async function loadTopTracks() {
-    resultsGrid.innerHTML = `<p id="placeholder">Loading top tracks...</p>`;
-    
+    resultsGrid.innerHTML = createSkeletonLoaders(8);
+
     try {
         if (topTracksData && topTracksLastUpdated && isDataStillValid()) {
             console.log('Using cached top tracks data');
             displayTopTracks(topTracksData);
             return;
         }
-        
+
         console.log('Fetching fresh top tracks data');
         const topTracksResponse = await fetch(TOP_TRACKS_API);
         const topTracksDatas = await topTracksResponse.json();
@@ -103,8 +110,8 @@ async function loadTopTracks() {
         if (allItems.length > 0) {
             const sortedTracks = allItems
                 .filter(track => track.popularity > 0)
-                .sort((a, b) => b.popularity - a.popularity)
-                .slice(0, 20); 
+                .sort((a, b) => (b.popularity - a.popularity))
+                .slice(0, 20);
 
             topTracksData = sortedTracks;
             topTracksLastUpdated = new Date();
@@ -112,7 +119,7 @@ async function loadTopTracks() {
             topTracksBadge.classList.add('hidden');
 
             displayTopTracks(sortedTracks);
-            console.log('Top tracks loaded:', sortedTracks.length);
+            console.log('Top tracks loaded:', sortedTracks);
         } else {
             resultsGrid.innerHTML = `<p id="placeholder">No top tracks available at the moment.</p>`;
         }
@@ -179,19 +186,20 @@ function displayTopTracks(tracks) {
 
 function createTopTrackCard(track, index) {
     const card = document.createElement("div");
-    card.className = "track-glass group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:brightness-110";
-    
+    card.className = "track-glass flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors";
+
     const imageUrl = `${IMAGE_API_BASE}${track.album.cover.split("-").join("/")}/320x320.jpg`;
     const rankColor = index < 3 ? 'text-yellow-400' : index < 10 ? 'text-gray-300' : 'text-gray-500';
     const rankBgColor = index < 3 ? 'bg-yellow-500/20' : index < 10 ? 'bg-gray-500/20' : 'bg-gray-600/20';
-    
+    const isFav = isFavorite(track);
+
     card.innerHTML = `
         <div class="flex items-center justify-center w-8 h-8 rounded-full ${rankBgColor} ${rankColor} font-bold text-sm">
             ${index + 1}
         </div>
         <img src="${imageUrl}" alt="${track.title}" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold text-white group-hover:text-blue-400">${track.title}</h3>
+            <h3 class="break-words font-semibold text-white">${track.title}</h3>
             <a class="break-words text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${track.artist.name}</a>
             <div class="flex items-center gap-2 mt-1">
                 <span class="text-xs text-gray-500">${track.album.title}</span>
@@ -199,7 +207,12 @@ function createTopTrackCard(track, index) {
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
-            <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue">
+            <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400" title="${isFav ? 'remove from favorites' : 'add to favorites'}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            </button>
+            <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue" aria-label="Add to queue">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -208,15 +221,27 @@ function createTopTrackCard(track, index) {
             <span>${formatTime(track.duration || 0)}</span>
         </div>
     `;
-    
-    
+
+
+    card.querySelector(".favorite-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(track);
+        const btn = e.target.closest('.favorite-btn');
+        const isNowFav = isFavorite(track);
+        btn.classList.toggle('text-red-400', isNowFav);
+        btn.classList.toggle('text-gray-400', !isNowFav);
+        btn.querySelector('svg').setAttribute('fill', isNowFav ? 'currentColor' : 'none');
+        btn.setAttribute('title', isNowFav ? 'remove from favorites' : 'add to favorites');
+        btn.setAttribute('aria-label', isNowFav ? 'Remove from favorites' : 'Add to favorites');
+    });
+
     card.querySelector(".add-to-queue-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         addToQueue(track);
     });
-    
+
     card.addEventListener("click", () => playSong(index, currentList));
-    
+
     return card;
 }
 
@@ -245,17 +270,18 @@ searchBtn.addEventListener("click", () => {
 });
 
 async function searchSongs(query) {
-    resultsGrid.innerHTML = `<p id="placeholder">Searching "${query}"...</p>`;
-    
+    // Show skeleton loaders
+    resultsGrid.innerHTML = createSkeletonLoaders(6);
+
     try {
-        const apiUrl = currentSearchMode === 'tracks' 
+        const apiUrl = currentSearchMode === 'tracks'
             ? `${API_BASE}/search/?s=${query}`
             : `${API_BASE}/search/?a=${query}&limit=50`;
-        
+
         const response = await fetch(apiUrl);
         const data = await response.json();
         console.log('API Response:', data);
-        
+
         if (currentSearchMode === 'artists') {
             const artists = extractArtistData(data);
             console.log('Extracted artists:', artists);
@@ -364,7 +390,7 @@ function displayArtistResults(artists) {
 
 function createArtistCard(artist, index) {
     const card = document.createElement("div");
-    card.className = "track-glass group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:brightness-110";
+    card.className = "track-glass flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors";
     
     const artistImageUrl = artist.picture 
         ? `${IMAGE_API_BASE}${artist.picture.split("-").join("/")}/320x320.jpg`
@@ -373,7 +399,7 @@ function createArtistCard(artist, index) {
     card.innerHTML = `
         <img src="${artistImageUrl}" alt="${artist.name}" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold text-white group-hover:text-blue-400">${artist.name}</h3>
+            <h3 class="break-words font-semibold text-white">${artist.name}</h3>
             <p class="text-sm text-gray-400">${artist.artistTypes?.join(', ') || 'Artist'}</p>
             <p class="text-xs text-gray-500">Artist Profile</p>
         </div>
@@ -422,19 +448,25 @@ function displayResults(songs) {
 
 function createTrackCard(song, index) {
     const card = document.createElement("div");
-    card.className = "track-glass group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:brightness-110";
-    
+    card.className = "track-glass flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors";
+
     const imageUrl = `${IMAGE_API_BASE}${song.album.cover.split("-").join("/")}/320x320.jpg`;
-    
+    const isFav = isFavorite(song);
+
     card.innerHTML = `
         <img src="${imageUrl}" alt="${song.title}" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold text-white group-hover:text-blue-400">${song.title}</h3>
+            <h3 class="break-words font-semibold text-white">${song.title}</h3>
             <a class="break-words text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${song.artist.name}</a>
             <p class="text-xs text-gray-500">${song.album.title} • CD • 16-bit/44.1 kHz FLAC</p>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
-            <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue">
+            <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400" title="${isFav ? 'remove from favorites' : 'add to favorites'}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            </button>
+            <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue" aria-label="Add to queue">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -443,14 +475,26 @@ function createTrackCard(song, index) {
             <span>${formatTime(song.duration || 0)}</span>
         </div>
     `;
-    
+
+    card.querySelector(".favorite-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavorite(song);
+        const btn = e.target.closest('.favorite-btn');
+        const isNowFav = isFavorite(song);
+        btn.classList.toggle('text-red-400', isNowFav);
+        btn.classList.toggle('text-gray-400', !isNowFav);
+        btn.querySelector('svg').setAttribute('fill', isNowFav ? 'currentColor' : 'none');
+        btn.setAttribute('title', isNowFav ? 'remove from favorites' : 'add to favorites');
+        btn.setAttribute('aria-label', isNowFav ? 'Remove from favorites' : 'Add to favorites');
+    });
+
     card.querySelector(".add-to-queue-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         addToQueue(song);
     });
-    
+
     card.addEventListener("click", () => playSong(index, currentList));
-    
+
     return card;
 }
 
@@ -496,6 +540,26 @@ function renderQueue() {
     });
 
     queueListContainer.appendChild(ul);
+
+    new Sortable(ul, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function(evt) {
+            const oldIndex = evt.oldIndex;
+            const newIndex = evt.newIndex;
+            const movedItem = queue.splice(oldIndex, 1)[0];
+            queue.splice(newIndex, 0, movedItem);
+
+            if (currentSong === oldIndex) {
+                currentSong = newIndex;
+            } else if (oldIndex < currentSong && newIndex >= currentSong) {
+                currentSong--;
+            } else if (oldIndex > currentSong && newIndex <= currentSong) {
+                currentSong++;
+            }
+            renderQueue();
+        }
+    });
 }
 
 function createQueueItem(song, index) {
@@ -657,12 +721,73 @@ document.getElementById("progressContainer").addEventListener("click", (e) => {
     audio.currentTime = (clickX / width) * duration;
 });
 
+function displayFavorites() {
+    currentList = favorites;
+    resultsGrid.innerHTML = "";
+
+    const header = document.createElement('div');
+    header.className = 'mb-6 p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-lg border border-red-500/20';
+
+    header.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-1">Favorites</h3>
+                <p class="text-sm text-gray-400">${favorites.length} favorite track(s)</p>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-gray-500">Your liked songs</span>
+            </div>
+        </div>
+    `;
+
+    resultsGrid.appendChild(header);
+
+    if (!favorites.length) {
+        resultsGrid.innerHTML += `<p id="placeholder">No favorites yet. Heart some tracks to see them here!</p>`;
+        return;
+    }
+
+    favorites.forEach((track, index) => {
+        const card = createTrackCard(track, index);
+        resultsGrid.appendChild(card);
+    });
+}
+
 function formatTime(seconds) {
     if (isNaN(seconds)) return "0:00";
-    
+
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    
+
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 }
 
+function isFavorite(track) {
+    return favorites.some(fav => fav.id === track.id);
+}
+
+function toggleFavorite(track) {
+    const index = favorites.findIndex(fav => fav.id === track.id);
+    if (index > -1) {
+        favorites.splice(index, 1);
+    } else {
+        favorites.push(track);
+    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+function createSkeletonLoaders(count) {
+    let html = '';
+    for (let i = 0; i < count; i++) {
+        html += `
+            <div class="skeleton-card">
+                <div class="skeleton skeleton-image"></div>
+                <div class="skeleton-text">
+                    <div class="skeleton skeleton-line long"></div>
+                    <div class="skeleton skeleton-line short"></div>
+                </div>
+            </div>
+        `;
+    }
+    return html;
+}
