@@ -1,6 +1,6 @@
 const API_BASE = "https://vogel.qqdl.site";
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
-const TOP_TRACKS_API = "http://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=0ad369170a5a3d839efe249ca049ecc9&format=json"
+const TOP_TRACKS_API = "https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=0ad369170a5a3d839efe249ca049ecc9&format=json"
 
 const searchInput = document.getElementById("searchInput");
 const resultsGrid = document.getElementById("resultsGrid");
@@ -665,3 +665,4 @@ function formatTime(seconds) {
     
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 }
+
