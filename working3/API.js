@@ -164,7 +164,7 @@ function displayTopTracks(tracks) {
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-white mb-1">Top tracks</h3>
-                <p class="text-sm text-gray-400">Top tracks based on popularity</p>
+                <p class="text-sm text-gray-400">Top tracks based on activity</p>
             </div>
             <div class="text-right">
                 <span class="text-xs text-gray-500">${lastUpdatedText}</span>
@@ -799,3 +799,4 @@ function createSkeletonLoaders(count) {
     }
     return html;
 }
+
