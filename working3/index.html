@@ -305,6 +305,34 @@
                 </div>
               </div>
 
+              <div
+                id="equalizerPanel"
+                class="equalizer-panel mt-4 space-y-3 rounded-2xl border p-4 text-sm shadow-inner"
+                style="display: none"
+              >
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 text-gray-300">
+                    <i
+                      data-lucide="sliders"
+                      style="width: 18px; height: 18px"
+                    ></i>
+                    <span class="font-medium">Equalizer</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button
+                      id="closeEqualizerBtn"
+                      class="rounded-full p-1 text-gray-400 transition-colors hover:text-white"
+                      title="close"
+                      aria-label="Close equalizer panel"
+                    >
+                      <i data-lucide="x" style="width: 16px; height: 16px"></i>
+                    </button>
+                  </div>
+                </div>
+                <div id="equalizerContainer">
+                  <weq8-ui></weq8-ui>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -315,30 +343,6 @@
     </footer>
 
     <audio id="audio" crossorigin="anonymous"></audio>
-
-    <div id="equalizerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" style="display: none;">
-      <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border bg-gray-800 shadow-2xl">
-        <div class="p-4 sm:p-6">
-          <div class="mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-white">
-              <i data-lucide="sliders" class="w-5 h-5 sm:w-6 sm:h-6"></i>
-              <h2 class="text-lg sm:text-xl font-semibold">Equalizer</h2>
-            </div>
-            <button
-              id="closeEqualizerModalBtn"
-              class="rounded-full p-2 text-gray-400 transition-colors hover:text-white"
-              title="close"
-              aria-label="Close equalizer modal"
-            >
-              <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-            </button>
-          </div>
-          <div id="equalizerContainer">
-            <weq8-ui></weq8-ui>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <script>
       const currentUser = localStorage.getItem("currentUser");
