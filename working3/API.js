@@ -101,16 +101,25 @@ async function loadTopTracks() {
         const topTracksDatas = await topTracksResponse.json();
 
         const trackPromises = topTracksDatas.tracks.track.map(track =>
-            fetch(`${API_BASE}/search/?s=${track.name}&limit=50`).then(res => res.json())
+            fetch(`${API_BASE}/search/?s=${track.name} ${track.artist.name}&limit=1`).then(res => res.json())
         );
         const trackDatas = await Promise.all(trackPromises);
 
-        const allItems = trackDatas.flatMap(data => data.items || []);
+        const allItems = trackDatas.map(data => data.items && data.items.length > 0 ? data.items[0] : null).filter(item => item);
 
         if (allItems.length > 0) {
-            const sortedTracks = allItems
+            const trackMap = new Map();
+            allItems
                 .filter(track => track.popularity > 0)
-                .sort((a, b) => (b.popularity - a.popularity))
+                .forEach(track => {
+                    const key = `${track.artist.name}-${track.title}`;
+                    if (!trackMap.has(key) || trackMap.get(key).popularity < track.popularity) {
+                        trackMap.set(key, track);
+                    }
+                });
+
+            const sortedTracks = Array.from(trackMap.values())
+                .sort((a, b) => b - a)
                 .slice(0, 20);
 
             topTracksData = sortedTracks;
@@ -270,7 +279,6 @@ searchBtn.addEventListener("click", () => {
 });
 
 async function searchSongs(query) {
-    // Show skeleton loaders
     resultsGrid.innerHTML = createSkeletonLoaders(6);
 
     try {
