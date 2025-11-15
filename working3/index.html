@@ -7,11 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="./favicon.ico">
   </head>
   <body class="bg-gray-900 text-white min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
-      <div class="py-8 text-center">
+      <header class="py-8 text-center">
         <div class="mb-4 flex items-end justify-center gap-2">
           <h2
             class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-[1.875rem]/[2.5rem] sm:text-[3rem]/[4rem] font-bold text-transparent"
@@ -24,7 +25,7 @@
           Try some Touhou music if you don't know what to listen to! <br>
           Or check out the Top Tracks tab!
         </p>
-      </div>
+      </header>
 
       <div class="w-full">
         <div class="mb-6">
@@ -89,9 +90,10 @@
       </div>
     </div>
 
-    <footer class="player">
+  <footer class="player">
       <div
-        class="audio-player-backdrop fixed inset-x-0 bottom-0 z-50 px-4 pt-16 pb-5 sm:px-6 sm:pt-16 sm:pb-6"
+        class="audio-player-backdrop fixed inset-x-0 bottom-0 z-50 px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10" 
+        style="top: -140.5px; padding: 0"
       >
         <div class="relative mx-auto w-full max-w-screen-2xl">
           <div
@@ -224,6 +226,20 @@
                       aria-label="Volume level"
                     />
                   </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      id="equalizerBtn"
+                      class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white"
+                      title="equalizer"
+                      aria-label="Toggle equalizer"
+                    >
+                      <i
+                        data-lucide="sliders"
+                        style="width: 16px; height: 16px"
+                      ></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -288,13 +304,41 @@
                   </p>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
       </div>
+      <div class="text-center py-4 text-gray-400">
+        <span class="mx-2">made with love by dzunggzz</span>
+      </div>
     </footer>
 
-    <audio id="audio"></audio>
+    <audio id="audio" crossorigin="anonymous"></audio>
+
+    <div id="equalizerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" style="display: none;">
+      <div class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border bg-gray-800 shadow-2xl">
+        <div class="p-4 sm:p-6">
+          <div class="mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-white">
+              <i data-lucide="sliders" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+              <h2 class="text-lg sm:text-xl font-semibold">Equalizer</h2>
+            </div>
+            <button
+              id="closeEqualizerModalBtn"
+              class="rounded-full p-2 text-gray-400 transition-colors hover:text-white"
+              title="close"
+              aria-label="Close equalizer modal"
+            >
+              <i data-lucide="x" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            </button>
+          </div>
+          <div id="equalizerContainer">
+            <weq8-ui></weq8-ui>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
       const currentUser = localStorage.getItem("currentUser");
@@ -305,8 +349,13 @@
         lucide.createIcons();
       });
     </script>
+    <script type="module">
+      import { WEQ8Runtime } from "https://cdn.skypack.dev/weq8";
+      import "https://cdn.skypack.dev/weq8/ui";
+
+      window.WEQ8Runtime = WEQ8Runtime;
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="./API.js"></script>
   </body>
 </html>
-
