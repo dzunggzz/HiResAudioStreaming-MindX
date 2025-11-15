@@ -33,8 +33,9 @@ const queueLength = document.getElementById("queueLength");
 const queueListContainer = document.getElementById("queueListContainer");
 
 const equalizerBtn = document.getElementById("equalizerBtn");
-const equalizerModal = document.getElementById("equalizerModal");
-const closeEqualizerModalBtn = document.getElementById("closeEqualizerModalBtn");
+const equalizerPanel = document.getElementById("equalizerPanel");
+const closeEqualizerBtn = document.getElementById("closeEqualizerBtn");
+const player = document.querySelector('.audio-player-backdrop');
 
 let currentList = [];
 let queue = [];
@@ -515,25 +516,41 @@ function createTrackCard(song, index) {
 }
 
 queueBtn.addEventListener("click", () => {
-    queuePanel.style.display = queuePanel.style.display === "none" ? "block" : "none";
+    const isOpening = queuePanel.style.display === "none";
+    queuePanel.style.display = isOpening ? "block" : "none";
+    if (isOpening) {
+        equalizerPanel.style.display = "none";
+        setTimeout(() => {
+            const height = queuePanel.offsetHeight;
+            player.style.transform = 'translateY(-' + height + 'px)';
+        }, 10);
+    } else {
+        player.style.transform = '';
+    }
 });
 
 closeQueueBtn.addEventListener("click", () => {
     queuePanel.style.display = "none";
+    player.style.transform = '';
 });
 
 equalizerBtn.addEventListener("click", () => {
-    equalizerModal.style.display = "flex";
-});
-
-closeEqualizerModalBtn.addEventListener("click", () => {
-    equalizerModal.style.display = "none";
-});
-
-equalizerModal.addEventListener("click", (e) => {
-    if (e.target === equalizerModal) {
-        equalizerModal.style.display = "none";
+    const isOpening = equalizerPanel.style.display === "none";
+    equalizerPanel.style.display = isOpening ? "block" : "none";
+    if (isOpening) {
+        queuePanel.style.display = "none";
+        setTimeout(() => {
+            const height = equalizerPanel.offsetHeight;
+            player.style.transform = 'translateY(-' + height + 'px)';
+        }, 10);
+    } else {
+        player.style.transform = '';
     }
+});
+
+closeEqualizerBtn.addEventListener("click", () => {
+    equalizerPanel.style.display = "none";
+    player.style.transform = '';
 });
 
 function addToQueue(song) {
@@ -675,6 +692,7 @@ async function initWebAudio() {
         audioSource.connect(weq8.input);
         weq8.connect(gainNode);
         gainNode.connect(audioCtx.destination);
+
 
         gainNode.gain.value = volumeSlider.value;
         audio.volume = 1; 
