@@ -1,7 +1,6 @@
 const API_BASE = "https://vogel.qqdl.site";
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
 const TOP_TRACKS_API = "https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=0ad369170a5a3d839efe249ca049ecc9&format=json"
-
 const searchInput = document.getElementById("searchInput");
 const resultsGrid = document.getElementById("resultsGrid");
 const audio = document.getElementById("audio");
@@ -33,6 +32,10 @@ const queueCount = document.getElementById("queueCount");
 const queueLength = document.getElementById("queueLength");
 const queueListContainer = document.getElementById("queueListContainer");
 
+const equalizerBtn = document.getElementById("equalizerBtn");
+const equalizerModal = document.getElementById("equalizerModal");
+const closeEqualizerModalBtn = document.getElementById("closeEqualizerModalBtn");
+
 let currentList = [];
 let queue = [];
 let currentSong = 0;
@@ -41,6 +44,11 @@ let currentSearchMode = 'tracks';
 let topTracksData = null;
 let topTracksLastUpdated = null;
 let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+let audioCtx;
+let audioSource;
+let gainNode;
+let weq8;
 
 trackSearchTab.addEventListener("click", () => switchSearchMode('tracks'));
 artistSearchTab.addEventListener("click", () => switchSearchMode('artists'));
@@ -164,7 +172,7 @@ function displayTopTracks(tracks) {
         <div class="flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-white mb-1">Top tracks</h3>
-                <p class="text-sm text-gray-400">Top tracks based on activity</p>
+                <p class="text-sm text-gray-400">Top tracks based on popularity</p>
             </div>
             <div class="text-right">
                 <span class="text-xs text-gray-500">${lastUpdatedText}</span>
@@ -514,6 +522,20 @@ closeQueueBtn.addEventListener("click", () => {
     queuePanel.style.display = "none";
 });
 
+equalizerBtn.addEventListener("click", () => {
+    equalizerModal.style.display = "flex";
+});
+
+closeEqualizerModalBtn.addEventListener("click", () => {
+    equalizerModal.style.display = "none";
+});
+
+equalizerModal.addEventListener("click", (e) => {
+    if (e.target === equalizerModal) {
+        equalizerModal.style.display = "none";
+    }
+});
+
 function addToQueue(song) {
     queue.push(song);
     renderQueue();
@@ -618,7 +640,7 @@ async function playSongFromQueue(index, forcePlay = false) {
     if (!song) return;
 
     currentSong = index;
-    
+
     try {
         const streamResponse = await fetch(`${API_BASE}/track/?id=${song.id}&quality=LOSSLESS`);
         const streamData = await streamResponse.json();
@@ -630,11 +652,39 @@ async function playSongFromQueue(index, forcePlay = false) {
         document.getElementById("albumTitle").textContent = song.album.title;
         document.getElementById("qualityLabel").textContent = "CD";
 
+        if (!audioCtx) {
+            await initWebAudio();
+        }
+
         audio.play();
         isPlaying = true;
         updatePlayButton(isPlaying);
     } catch (error) {
         console.error('Playback error:', error);
+    }
+}
+
+async function initWebAudio() {
+    try {
+        audioCtx = new AudioContext();
+        await audioCtx.resume(); 
+        audioSource = audioCtx.createMediaElementSource(audio);
+        gainNode = audioCtx.createGain();
+        weq8 = new window.WEQ8Runtime(audioCtx);
+
+        audioSource.connect(weq8.input);
+        weq8.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        gainNode.gain.value = volumeSlider.value;
+        audio.volume = 1; 
+
+        const weq8UI = document.querySelector("weq8-ui");
+        if (weq8UI) {
+            weq8UI.runtime = weq8;
+        }
+    } catch (error) {
+        console.error('Web Audio initialization error:', error);
     }
 }
 
@@ -715,7 +765,11 @@ audio.addEventListener("timeupdate", () => {
 audio.addEventListener("ended", () => nextBtn.click());
 
 volumeSlider.addEventListener("input", (e) => {
-    audio.volume = e.target.value;
+    if (gainNode) {
+        gainNode.gain.value = e.target.value;
+    } else {
+        audio.volume = e.target.value;
+    }
 });
 
 document.getElementById("progressContainer").addEventListener("click", (e) => {
@@ -799,4 +853,3 @@ function createSkeletonLoaders(count) {
     }
     return html;
 }
-
