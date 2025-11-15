@@ -1,6 +1,6 @@
 # *Sản Phẩm Cuối Khoá Web Development Advanced tại trung tâm MINDX*
 
-HRAS là dự án nhằm mang lại trải nghiệm âm nhạc tuyệt vời tại gia. HRAS sử dụng API HIFI của [sachinsenal0x64](https://github.com/sachinsenal0x64/hifi) và TailwindCSS cho phần UI (cảm ơn [uimaxbai](https://github.com/uimaxbai/tidal-ui)).
+HRAS là dự án nhằm mang lại trải nghiệm âm nhạc tuyệt vời tại gia. HRAS sử dụng API HIFI của [sachinsenal0x64](https://github.com/sachinsenal0x64/hifi), TailwindCSS cho phần UI (cảm ơn [uimaxbai](https://github.com/uimaxbai/tidal-ui)) và Parametric EQ của [teropa và samueldiggins](https://github.com/teropa/weq8).
 
 Chất lượng âm thanh: CD-quality (16bit, 44.1kHz) LOSSLESS FLAC.
 
