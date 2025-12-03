@@ -289,24 +289,56 @@ body {
 
 #queueBtn {
   background: transparent;
-  border: 1px solid rgba(148, 163, 184, 0.2);
   color: #a1a1aa;
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 0.5rem;
   border-radius: 0.5rem;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #queueBtn:hover {
   color: white;
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
+
+#equalizerBtn {
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+#lyricsBtn {
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+#lyricsBtn:hover {
+  color: white;
+}
+
+#repeatBtn {
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+#repeatBtn:hover {
+  color: white;
+}
+
+#equalizerBtn:hover {
+  color: white;
+}
+
 
 .audio-player-glass {
   background: rgba(17, 24, 39, 0.85);
@@ -421,7 +453,6 @@ body {
 .skeleton-line.long {
   width: 80%;
 }
-
 
 .sortable-ghost {
   opacity: 0.4;
