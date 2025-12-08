@@ -18,6 +18,6 @@ Changelog:
 - [x] Cải thiện thời gian load bài (credit goes to uimaxbai YOU'RE THE GOAT)
 
 Issues:
-- [ ] Lyrics are broken, API Provider removed the /lyrics endpoint
+~~Lyrics are broken, API Provider removed the /lyrics endpoint~~
 
 ![UI](UI.png)
