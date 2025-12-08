@@ -17,4 +17,7 @@ Changelog:
 - [x] List bài hát yêu thích của từng user được lưu riêng trên Firestore
 - [x] Cải thiện thời gian load bài (credit goes to uimaxbai YOU'RE THE GOAT)
 
+Issues:
+- [ ] Lyrics are broken, API Provider removed the /lyrics endpoint
+
 ![UI](UI.png)
