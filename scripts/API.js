@@ -7,6 +7,7 @@ const API_BASES = [
   "https://triton.squid.wtf",
 ];
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
+const TRACK_INFO_API_BASE = "https://triton.squid.wtf/info";
 const TOP_TRACKS_API =
   "https://ws.audioscrobbler.com/2.0/?method=chart.gettoptracks&api_key=0ad369170a5a3d839efe249ca049ecc9&format=json";
 const searchInput = document.getElementById("searchInput");
@@ -1127,10 +1128,32 @@ async function toggleFavorite(track) {
 
 async function fetchLyrics(trackId) {
   try {
-    const response = await apiFetch("/lyrics/", { id: trackId });
-    const data = await response.json();
-    if (data && data.length > 0 && data[0].subtitles) {
-      return data[0].subtitles;
+    const trackInfoResponse = await fetch(`${TRACK_INFO_API_BASE}/?id=${trackId}`);
+    const trackInfo = await trackInfoResponse.json();
+
+    const title = trackInfo.data.title;
+    const artist = trackInfo.data.artist.name;
+    const album = trackInfo.data.album.title;
+    const duration = trackInfo.data.duration;
+
+    const lyricsUrl = `https://lyricsplus.prjktla.workers.dev/v2/lyrics/get?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}&duration=${duration}&source=apple,lyricsplus,musixmatch,spotify,musixmatch-word`;
+    const lyricsResponse = await fetch(lyricsUrl);
+    const lyricsData = await lyricsResponse.json();
+
+    if (lyricsData.error) {
+      console.error("Lyrics not found:", lyricsData.error.message);
+      return null;
+    }
+
+    if (lyricsData.lyrics && Array.isArray(lyricsData.lyrics)) {
+      const lrcLines = lyricsData.lyrics.map(line => {
+        const minutes = Math.floor(line.time / 60000);
+        const seconds = Math.floor((line.time % 60000) / 1000);
+        const centiseconds = Math.floor((line.time % 1000) / 10);
+        const timestamp = `[${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}]`;
+        return `${timestamp}${line.text}`;
+      });
+      return lrcLines.join('\n');
     }
     return null;
   } catch (error) {
