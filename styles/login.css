@@ -1,0 +1,65 @@
+.grid-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: moveGrid 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes moveGrid {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+.welcome-block .traveler-text {
+  color: #3b82f6;
+}
+
+.welcome-block .join-text {
+  color: #3b82f6;
+}
+
+.show-password-icon {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 1024px) {
+  .content-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .image-container {
+    display: none;
+  }
+  .welcome-block h1 {
+    font-size: 3rem;
+  }
+  .login-form-block {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-block h1 {
+    font-size: 2.5rem;
+  }
+  .login-form-block {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-block h1 {
+    font-size: 2rem;
+  }
+  .login-form-block {
+    padding: 1rem;
+  }
+}
