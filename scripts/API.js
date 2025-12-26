@@ -3,9 +3,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 
 const API_BASES = [
   // "https://vogel.qqdl.site",
-  "https://tidal-api-2.binimum.org",
+  // "https://tidal-api-2.binimum.org",
   "https://triton.squid.wtf",
 ];
+
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
 const TRACK_INFO_API_BASE = "https://triton.squid.wtf/info";
 const TOP_TRACKS_API =
@@ -32,7 +33,9 @@ async function apiFetch(endpoint, params = {}) {
 
   for (let i = 0; i < API_BASES.length; i++) {
     const base = API_BASES[i];
+    console.log(`Trying API ${base}...`);
     const url = `${base}${fullEndpoint}`;
+    console.log(`Fetching URL: ${url}`);
 
     try {
       const response = await fetch(url);
@@ -67,6 +70,7 @@ const trackSearchTab = document.getElementById("trackSearchTab");
 const artistSearchTab = document.getElementById("artistSearchTab");
 const topTracksTab = document.getElementById("topTracksTab");
 const favoritesTab = document.getElementById("favoritesTab");
+const myPlaylistTab = document.getElementById("myPlaylistTab");
 const topTracksBadge = document.getElementById("topTracksBadge");
 const shuffleBtn = document.getElementById("shuffleBtn");
 const clearBtn = document.getElementById("clearBtn");
@@ -95,14 +99,17 @@ let currentSearchMode = "tracks";
 let topTracksData = null;
 let topTracksLastUpdated = null;
 let favorites = [];
+let userPlaylists = [];
 let currentUser = null;
 
 onAuthStateChanged(window.auth, async (user) => {
   currentUser = user;
   if (user) {
     await loadFavoritesFromFirestore();
+    await loadPlaylistsFromFirestore();
   } else {
     favorites = [];
+    userPlaylists = [];
   }
 });
 
@@ -174,6 +181,7 @@ trackSearchTab.addEventListener("click", () => switchSearchMode("tracks"));
 artistSearchTab.addEventListener("click", () => switchSearchMode("artists"));
 topTracksTab.addEventListener("click", () => switchSearchMode("topTracks"));
 favoritesTab.addEventListener("click", () => switchSearchMode("favorites"));
+myPlaylistTab.addEventListener("click", () => switchSearchMode("myPlaylists"));
 repeatBtn.addEventListener("click", () => toggleRepeatMode());
 
 function switchSearchMode(mode) {
@@ -190,6 +198,9 @@ function switchSearchMode(mode) {
   } else if (mode === "favorites") {
     searchInput.style.display = "none";
     displayFavorites();
+  } else if (mode === "myPlaylists") {
+    searchInput.style.display = "none";
+    displayMyPlaylists();
   } else {
     searchInput.style.display = "block";
     searchInput.placeholder =
@@ -201,6 +212,7 @@ function updateTabStyling() {
   const tabs = [
     { tab: trackSearchTab, mode: "tracks" },
     { tab: artistSearchTab, mode: "artists" },
+    { tab: myPlaylistTab, mode: "myPlaylists" },
     { tab: topTracksTab, mode: "topTracks" },
     { tab: favoritesTab, mode: "favorites" },
   ];
@@ -229,20 +241,22 @@ async function loadTopTracks() {
     console.log("Fetching fresh top tracks data");
     const topTracksResponse = await fetch(TOP_TRACKS_API);
     const topTracksDatas = await topTracksResponse.json();
+    console.log(topTracksDatas.tracks.track);
 
     const trackPromises = topTracksDatas.tracks.track.map((track) =>
-      apiFetch("/search/", {
+      apiFetch("/search", {
         s: `${track.name} ${track.artist.name}`,
-        limit: 1,
       }).then((res) => res.json()),
     );
-    const trackDatas = await Promise.all(trackPromises);
 
+    const trackDatas = await Promise.all(trackPromises);
     const allItems = trackDatas
+
       .map((data) =>
         data.items && data.items.length > 0 ? data.items[0] : null,
       )
       .filter((item) => item);
+
 
     if (allItems.length > 0) {
       const trackMap = new Map();
@@ -379,6 +393,33 @@ function createTopTrackCard(track, index) {
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
             </button>
+            <div class="relative">
+                <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist" aria-label="Add to playlist">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                    <div class="p-2">
+                        <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
+                        <div class="max-h-32 overflow-y-auto">
+                            ${userPlaylists.map((playlist, index) => `
+                                <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${index}">
+                                    ${playlist.title}
+                                </button>
+                            `).join('')}
+                            <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" id="createNewPlaylistFromDropdown">
+                                + Create new playlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <span>${formatTime(track.duration || 0)}</span>
         </div>
     `;
@@ -406,6 +447,27 @@ function createTopTrackCard(track, index) {
   card.querySelector(".add-to-queue-btn").addEventListener("click", (e) => {
     e.stopPropagation();
     addToQueue(track);
+  });
+
+  const addToPlaylistBtn = card.querySelector(".add-to-playlist-btn");
+  const dropdown = card.querySelector(".playlist-dropdown");
+  
+  addToPlaylistBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("hidden");
+  });
+
+  dropdown.addEventListener("click", async (e) => {
+    if (e.target.matches("[data-playlist-index]")) {
+      e.stopPropagation();
+      const playlistIndex = parseInt(e.target.dataset.playlistIndex);
+      await addTrackToPlaylist(playlistIndex, track);
+      dropdown.classList.add("hidden");
+    } else if (e.target.id === "createNewPlaylistFromDropdown") {
+      e.stopPropagation();
+      dropdown.classList.add("hidden");
+      showCreatePlaylistModal();
+    }
   });
 
   card.addEventListener("click", () => playSong(index, currentList));
@@ -653,6 +715,33 @@ function createTrackCard(song, index) {
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
             </button>
+            <div class="relative">
+                <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist" aria-label="Add to playlist">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                    <div class="p-2">
+                        <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
+                        <div class="max-h-32 overflow-y-auto">
+                            ${userPlaylists.map((playlist, index) => `
+                                <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${index}">
+                                    ${playlist.title}
+                                </button>
+                            `).join('')}
+                            <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" id="createNewPlaylistFromDropdown">
+                                + Create new playlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <span>${formatTime(song.duration || 0)}</span>
         </div>
     `;
@@ -680,6 +769,31 @@ function createTrackCard(song, index) {
   card.querySelector(".add-to-queue-btn").addEventListener("click", (e) => {
     e.stopPropagation();
     addToQueue(song);
+  });
+
+  const addToPlaylistBtn = card.querySelector(".add-to-playlist-btn");
+  const dropdown = card.querySelector(".playlist-dropdown");
+  
+  addToPlaylistBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("hidden");
+  });
+
+  dropdown.addEventListener("click", async (e) => {
+    if (e.target.matches("[data-playlist-index]")) {
+      e.stopPropagation();
+      const playlistIndex = parseInt(e.target.dataset.playlistIndex);
+      await addTrackToPlaylist(playlistIndex, song);
+      dropdown.classList.add("hidden");
+    } else if (e.target.id === "createNewPlaylistFromDropdown") {
+      e.stopPropagation();
+      dropdown.classList.add("hidden");
+      showCreatePlaylistModal();
+    }
+  });
+
+  document.addEventListener("click", () => {
+    dropdown.classList.add("hidden");
   });
 
   card.addEventListener("click", () => playSong(index, currentList));
@@ -1089,6 +1203,311 @@ function displayFavorites() {
     resultsGrid.appendChild(card);
   });
 }
+
+async function loadPlaylistsFromFirestore() {
+  if (!currentUser) return;
+
+  try {
+    const docRef = doc(window.db, "playlists", currentUser.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      userPlaylists = docSnap.data().playlists || [];
+    } else {
+      userPlaylists = [];
+    }
+  } catch (error) {
+    console.error("Error loading playlists:", error);
+    userPlaylists = [];
+  }
+}
+
+function displayMyPlaylists() {
+  currentList = userPlaylists;
+  resultsGrid.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className =
+    "mb-6 p-4 bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-lg border border-green-500/20";
+
+  header.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-white mb-1">My Playlists</h3>
+                <p class="text-sm text-gray-400">${userPlaylists.length} playlist(s)</p>
+            </div>
+            <div class="text-right">
+                <button id="createPlaylistBtn" class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Create Playlist
+                </button>
+            </div>
+        </div>
+    `;
+
+  resultsGrid.appendChild(header);
+
+  header.querySelector("#createPlaylistBtn").addEventListener("click", () => {
+    showCreatePlaylistModal();
+  });
+
+  if (!userPlaylists.length) {
+    resultsGrid.innerHTML += `
+        <div class="text-center py-12">
+            <div class="mb-4">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-white mb-2">No playlists yet</h3>
+            <p class="text-gray-400 mb-4">Create your first playlist to start organizing your favorite tracks!</p>
+            <button onclick="showCreatePlaylistModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
+                Create Your First Playlist
+            </button>
+        </div>
+    `;
+    return;
+  }
+
+  userPlaylists.forEach((playlist, index) => {
+    const card = createPlaylistCard(playlist, index);
+    resultsGrid.appendChild(card);
+  });
+}
+
+function createPlaylistCard(playlist, index) {
+  const card = document.createElement("div");
+  card.className =
+    "track-glass flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-700/30";
+
+  const imageUrl = playlist.image 
+    ? `${IMAGE_API_BASE}${playlist.image.split("-").join("/")}/320x320.jpg`
+    : "https://placehold.co/64x64";
+
+  const totalDuration = playlist.tracks.reduce((sum, track) => sum + (track.duration || 0), 0);
+
+  card.innerHTML = `
+        <img src="${imageUrl}" alt="${playlist.title}" class="h-[64px] w-[64px] rounded object-cover">
+        <div class="min-w-0 flex-1">
+            <h3 class="break-words font-semibold text-white">${playlist.title}</h3>
+            <p class="break-words text-sm text-gray-400">${playlist.description || "No description"}</p>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs text-gray-500">${playlist.tracks.length} tracks</span>
+                <span class="text-xs text-gray-500">•</span>
+                <span class="text-xs text-gray-500">${formatTime(totalDuration)}</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-gray-400">
+            <button class="play-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="play playlist" aria-label="Play playlist">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5,3 19,12 5,21"></polygon>
+                </svg>
+            </button>
+            <button class="delete-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-red-400" title="delete playlist" aria-label="Delete playlist">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3,6 5,6 21,6"></polyline>
+                    <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+        </div>
+    `;
+
+  card.querySelector(".play-playlist-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    playPlaylist(index);
+  });
+
+  card.querySelector(".delete-playlist-btn").addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (confirm(`Are you sure you want to delete "${playlist.title}"?`)) {
+      await deletePlaylist(index);
+    }
+  });
+
+  card.addEventListener("click", () => showPlaylistDetails(playlist));
+
+  return card;
+}
+
+function playPlaylist(index) {
+  const playlist = userPlaylists[index];
+  if (!playlist || !playlist.tracks.length) return;
+
+  queue = [...playlist.tracks];
+  currentSong = 0;
+  playSongFromQueue(currentSong, true);
+  renderQueue();
+}
+
+async function deletePlaylist(index) {
+  if (!currentUser) return;
+
+  const playlist = userPlaylists[index];
+  try {
+    const docRef = doc(window.db, "playlists", currentUser.uid);
+    await updateDoc(docRef, {
+      playlists: arrayRemove(playlist)
+    });
+    
+    userPlaylists.splice(index, 1);
+    displayMyPlaylists();
+  } catch (error) {
+    console.error("Error deleting playlist:", error);
+  }
+}
+
+function showPlaylistDetails(playlist) {
+  // very scuffed
+  const trackList = playlist.tracks.map((track, index) => 
+    `${index + 1}. ${track.title} - ${track.artist.name}`
+  ).join('\n');
+  
+  alert(`Playlist: ${playlist.title}\n\nTracks:\n${trackList}`);
+}
+
+window.showCreatePlaylistModal = showCreatePlaylistModal;
+
+function showCreatePlaylistModal() {
+  const modalHTML = `
+    <div id="createPlaylistModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center">
+      <div class="bg-gray-800 rounded-lg shadow-2xl max-w-md w-full mx-4">
+        <div class="flex items-center justify-between p-4 border-b border-gray-700">
+          <h3 class="text-lg font-semibold text-white">Create New Playlist</h3>
+          <button id="closeCreateModal" class="text-gray-400 hover:text-white">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <form id="createPlaylistForm">
+            <div class="mb-4">
+              <label for="playlistTitle" class="block text-sm font-medium text-gray-300 mb-2">Playlist Name</label>
+              <input type="text" id="playlistTitle" name="title" required 
+                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     placeholder="Enter playlist name">
+            </div>
+            <div class="mb-6">
+              <label for="playlistDescription" class="block text-sm font-medium text-gray-300 mb-2">Description (optional)</label>
+              <textarea id="playlistDescription" name="description" rows="3"
+                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter playlist description"></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button type="button" id="cancelCreateBtn" class="px-4 py-2 text-gray-300 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">Create Playlist</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  const modal = document.getElementById('createPlaylistModal');
+  const form = document.getElementById('createPlaylistForm');
+  const closeBtn = document.getElementById('closeCreateModal');
+  const cancelBtn = document.getElementById('cancelCreateBtn');
+
+  closeBtn.addEventListener('click', () => modal.remove());
+  cancelBtn.addEventListener('click', () => modal.remove());
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('playlistTitle').value.trim();
+    const description = document.getElementById('playlistDescription').value.trim();
+    
+    if (title) {
+      await createPlaylist(title, description);
+      modal.remove();
+    }
+  });
+
+  document.getElementById('playlistTitle').focus();
+}
+
+async function createPlaylist(title, description = "") {
+  if (!currentUser) return;
+
+  const newPlaylist = {
+    uuid: `playlist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    title: title,
+    description: description,
+    numberOfTracks: 0,
+    duration: 0,
+    creator: {
+      id: currentUser.uid,
+      name: currentUser.displayName || currentUser.email
+    },
+    created: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    type: "USER",
+    publicPlaylist: false,
+    tracks: [],
+    image: null,
+    squareImage: null
+  };
+
+  try {
+    const docRef = doc(window.db, "playlists", currentUser.uid);
+    await setDoc(docRef, {
+      playlists: arrayUnion(newPlaylist)
+    }, { merge: true });
+    
+    userPlaylists.push(newPlaylist);
+    displayMyPlaylists();
+  } catch (error) {
+    console.error("Error creating playlist:", error);
+  }
+}
+
+async function addTrackToPlaylist(playlistIndex, track) {
+  if (!currentUser || playlistIndex < 0 || playlistIndex >= userPlaylists.length) return;
+
+  const playlist = userPlaylists[playlistIndex];
+
+  if (playlist.tracks.some(t => t.id === track.id)) {
+    alert('This track is already in the playlist!');
+    return;
+  }
+
+  const updatedPlaylist = {
+    ...playlist,
+    tracks: [...playlist.tracks, track],
+    numberOfTracks: playlist.tracks.length + 1,
+    duration: playlist.tracks.reduce((sum, t) => sum + (t.duration || 0), 0) + (track.duration || 0),
+    lastUpdated: new Date().toISOString()
+  };
+
+  try {
+    const docRef = doc(window.db, "playlists", currentUser.uid);
+    await updateDoc(docRef, {
+      playlists: arrayRemove(playlist)
+    });
+    await updateDoc(docRef, {
+      playlists: arrayUnion(updatedPlaylist)
+    });
+    
+    userPlaylists[playlistIndex] = updatedPlaylist;
+    
+
+    console.log(`Added "${track.title}" to "${playlist.title}"`);
+  } catch (error) {
+    console.error("Error adding track to playlist:", error);
+  }
+}
+
 
 function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
