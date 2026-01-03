@@ -14,6 +14,7 @@ Changelog (as of 4th Jan. 2026):
 - [x] Revamped UI/UX
 - [x] Revamped Artist search, a dedicated page for Artist's details has been created
 - [x] Revamped My Playlists, there's also a dedicated page for it
+- [x] Revamped Lyrics (W uimaxbai) 
 - [x] Forgot Password functionalities  
 
 Issues: Top Tracks tab is still broken, estimated time of fix is unknown (I'm lazy)
