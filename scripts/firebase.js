@@ -4,13 +4,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCvOMaghra_ilGnZ7KR5w-IzDcV_w2BRVU",
-  authDomain: "hras-jsi36.firebaseapp.com",
-  projectId: "hras-jsi36",
-  storageBucket: "hras-jsi36.firebasestorage.app",
-  messagingSenderId: "728168542406",
-  appId: "1:728168542406:web:1a8ed08ffa297366bfa7c7",
-  measurementId: "G-K321YJ4PNQ"
+  apiKey: "AIzaSyAURGfZssr80iaRP0LMd_XU4zn5pXdS8gs",
+  authDomain: "hras-jsi36-new.firebaseapp.com",
+  projectId: "hras-jsi36-new",
+  storageBucket: "hras-jsi36-new.firebasestorage.app",
+  messagingSenderId: "772387719992",
+  appId: "1:772387719992:web:b1c713c5a178942883cfcd",
+  measurementId: "G-VJPKELEDZ9"
 };
 
 const app = initializeApp(firebaseConfig);

@@ -7,6 +7,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/liricle"></script>
+        <script type="module" src="https://cdn.jsdelivr.net/npm/@uimaxbai/am-lyrics@0.6.4/dist/src/am-lyrics.min.js"></script>
         <link rel="stylesheet" href="./styles/style.css" />
         <link
             rel="stylesheet"
@@ -29,8 +30,9 @@
                     <br />
                     Or check out the Top Tracks tab!
                 </p>
-                <button id="logoutBtn" class="absolute top-4 right-4 text-white p-2 rounded" title="logout">
+                <button id="logoutBtn" class="absolute top-4 right-4 flex items-center gap-2 text-white p-2 rounded hover:text-gray-300 transition-colors" title="logout">
                     <i data-lucide="log-out" style="width: 16px; height: 16px"></i>
+                   <span class="text-sm font-semibold">Logout</span>
                 </button>
             </header>
 
@@ -212,6 +214,117 @@
             </div>
         </main>
 
+        </main>
+
+        <div id="artistPage" class="fixed inset-0 z-40 bg-gray-900 overflow-y-auto hidden">
+            <div class="container mx-auto px-4 py-8 max-w-7xl space-y-6 pb-48 lg:pb-64">
+                <button id="closeArtistPageBtn" class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white mb-2">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px"></i>
+                    Back
+                </button>
+
+                <div class="flex flex-col items-start gap-8 md:flex-row md:items-end">
+                    <div class="aspect-square w-full flex-shrink-0 overflow-hidden rounded-full bg-gray-800 shadow-2xl md:w-80">
+                         <img id="artistPageImage" src="https://placehold.co/320x320" alt="Artist" class="h-full w-full object-cover" />
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <p class="mb-2 text-sm text-gray-400 font-medium">ARTIST</p>
+                        <h1 id="artistPageName" class="mb-4 text-4xl font-bold md:text-6xl text-white">Artist Name</h1>
+
+                        <div id="artistPageRoles" class="flex flex-wrap items-center gap-2 mb-6">
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="space-y-12">
+
+                    <section>
+                        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-white">Top Tracks</h2>
+                                <p class="text-sm text-gray-400">Best songs from this artist.</p>
+                            </div>
+                        </div>
+
+
+                        <div class="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/40 p-4">
+                            <div id="artistTopTracksGrid" class="grid gap-4 grid-cols-1 md:grid-cols-2">
+
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-white">Discography</h2>
+                                <p class="text-sm text-gray-400">Albums, EPs, and singles.</p>
+                            </div>
+                        </div>
+                        
+                        <div id="artistDiscographyGrid" class="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+
+                             <div class="col-span-full py-12 text-center text-gray-500 bg-gray-900/20 rounded-xl border border-gray-800 border-dashed">
+                                Discography WIP
+                             </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="playlistPage" class="fixed inset-0 z-40 bg-gray-900 overflow-y-auto hidden">
+            <div class="container mx-auto px-4 py-8 max-w-7xl space-y-6 pb-48 lg:pb-64">
+
+                <div class="flex items-center justify-between mb-2">
+                    <button id="closePlaylistPageBtn" class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white">
+                        <i data-lucide="arrow-left" style="width: 20px; height: 20px"></i>
+                        Back
+                    </button>
+
+                    <button id="deletePlaylistPageBtn" class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px"></i>
+                        Delete Playlist
+                    </button>
+                </div>
+
+                <div class="flex flex-col items-start gap-8 md:flex-row md:items-end">
+                    <div class="aspect-square w-full flex-shrink-0 overflow-hidden rounded-lg bg-gray-800 shadow-2xl md:w-64">
+                         <img id="playlistPageImage" src="https://placehold.co/320x320" alt="Playlist Cover" class="h-full w-full object-cover" />
+                    </div>
+
+                    <div class="flex-1 w-full">
+                        <p class="mb-2 text-sm text-gray-400 font-medium tracking-wider">PLAYLIST</p>
+                        <h1 id="playlistPageTitle" class="mb-2 text-3xl font-bold md:text-5xl text-white">Playlist Title</h1>
+                         <p id="playlistPageCount" class="text-gray-400 text-sm mb-4">0 tracks</p>
+                        
+
+                         <button id="playPlaylistPageBtn" class="mt-2 flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20">
+                            <i data-lucide="play" class="fill-current" style="width: 20px; height: 20px"></i>
+                            Play
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="space-y-12">
+
+                    <section>
+
+                        <div class="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/40 p-4">
+                            <div id="playlistTracksGrid" class="flex flex-col gap-1">
+
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
         <footer class="player">
             <div
                 class="audio-player-backdrop fixed inset-x-0 bottom-0 z-50 px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10"
@@ -237,6 +350,7 @@
                             <div class="mb-3">
                                 <div class="progress-section">
                                     <div id="progressContainer" style="cursor: pointer;">
+                                        <div id="bufferBar"></div>
                                         <div id="progressBar"></div>
                                     </div>
                                 </div>
@@ -439,24 +553,26 @@
                 </div>
             </div>
             <div class="text-center py-4 text-gray-400">
-                <span class="mx-2">made with love by dzunggzz</span>
+                <span class="mx-2">made with love by dzunggzz</span> <br>
+                <span class="mx-2">please check out <a href="https://github.com/uimaxbai/tidal-ui" class="underline">uimaxbai</a> and <a href="https://github.com/sachinsenal0x64/hifi" class="underline">sachinsenal0x64</a> on github</span>
+                
             </div>
         </footer>
 
         <audio id="audio" crossorigin="anonymous"></audio>
-
-        <div id="lyricsModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75 flex items-center justify-center">
-            <div class="bg-gray-800 rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
-                <div class="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h3 class="text-lg font-semibold text-white">Lyrics</h3>
-                    <button id="closeLyricsModal" class="text-gray-400 hover:text-white">
-                        <i data-lucide="x" style="width: 24px; height: 24px"></i>
+        
+        <div id="amLyricsContainer" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+             <div class="relative w-full max-w-4xl h-[80vh] bg-gray-900/90 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-700/50 z-10 bg-gray-900/50 backdrop-blur-sm">
+                    <h3 class="text-lg font-semibold text-white flex gap-2 items-center">
+                        <i data-lucide="music-2" class="w-5 h-5 text-blue-400"></i> Lyrics
+                    </h3>
+                    <button id="closeAmLyrics" class="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
+                        <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-                <div id="lyricsContainer" class="p-4 overflow-y-auto max-h-[60vh] text-center">
-                    <p class="text-gray-400">Loading lyrics...</p>
-                </div>
-            </div>
+                <div id="amLyricsWrapper" class="w-full h-full text-lg"></div>
+             </div>
         </div>
 
         <div id="queueModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75 flex items-center justify-center">
