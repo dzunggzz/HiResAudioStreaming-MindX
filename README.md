@@ -10,14 +10,12 @@ Chất lượng âm thanh: CD-quality (16-bit, 44.1kHz) LOSSLESS FLAC.
 > [!TIP]
 > Nếu bạn không biết nghe bài nào, hãy nghe thử mấy bài Touhou Vocal. 
 
-Changelog:
-- [x] UI có thêm các nút điều khiển mới: Lyrics, Repeat, Ẩn / Hiện player
-- [x] UI cho các phần Queue, Equalizer, Lyrics đã được làm lại
-- [x] Register / Sign-in bằng Firebase Authentication
-- [x] List bài hát yêu thích của từng user được lưu riêng trên Firestore
-- [x] Cải thiện thời gian load bài (credit goes to uimaxbai YOU'RE THE GOAT)
+Changelog (as of 4th Jan. 2026):
+- [x] Revamped UI/UX
+- [x] Revamped Artist search, a dedicated page for Artist's details has been created
+- [x] Revamped My Playlists, there's also a dedicated page for it
+- [x] Forgot Password functionalities  
 
-Issues:
-~~Lyrics are broken, API Provider removed the /lyrics endpoint~~
+Issues: Top Tracks tab is still broken, estimated time of fix is unknown (I'm lazy)
 
 ![UI](UI.png)
