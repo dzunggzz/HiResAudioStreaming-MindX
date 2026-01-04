@@ -19,6 +19,6 @@ Changelog (as of 5th Jan. 2026):
 - [x] Forgot Password functionalities
 - [x] Removed Top tracks tab 
 
-Issues: none
+Issues: Track and Artist search functions are broken, no fix lol
 
 ![UI](UI.png)
