@@ -12,7 +12,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 const API_BASES = [
   "https://vogel.qqdl.site",
   // "https://tidal-api-2.binimum.org",
-  "https://triton.squid.wtf",
+  // "https://triton.squid.wtf",
 ];
 
 const ALBUM_API_BASE = "https://triton.squid.wtf/album";
