@@ -10,13 +10,15 @@ Chất lượng âm thanh: CD-quality (16-bit, 44.1kHz) LOSSLESS FLAC.
 > [!TIP]
 > Nếu bạn không biết nghe bài nào, hãy nghe thử mấy bài Touhou Vocal. 
 
-Changelog (as of 4th Jan. 2026):
+Changelog (as of 5th Jan. 2026):
+- [x] Implemented Album search
 - [x] Revamped UI/UX
 - [x] Revamped Artist search, a dedicated page for Artist's details has been created
 - [x] Revamped My Playlists, there's also a dedicated page for it
 - [x] Revamped Lyrics (W uimaxbai) 
-- [x] Forgot Password functionalities  
+- [x] Forgot Password functionalities
+- [x] Removed Top tracks tab 
 
-Issues: Top Tracks tab is still broken, estimated time of fix is unknown (I'm lazy)
+Issues: none
 
 ![UI](UI.png)
