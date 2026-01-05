@@ -1581,6 +1581,7 @@ const artistPageImage = document.getElementById("artistPageImage");
 const artistPageName = document.getElementById("artistPageName");
 const artistPageRoles = document.getElementById("artistPageRoles");
 const artistTopTracksGrid = document.getElementById("artistTopTracksGrid");
+const artistDiscographyGrid = document.getElementById("artistDiscographyGrid");
 
 let currentArtistId = null;
 
@@ -1594,6 +1595,7 @@ async function showArtistPage(artistId) {
     artistPageImage.src = "https://placehold.co/320x320?text=Loading";
     artistPageRoles.innerHTML = "";
     artistTopTracksGrid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12">Loading tracks...</div>';
+    artistDiscographyGrid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12">Loading albums...</div>';
 
     try {
         const artistData = await loadArtist(artistId);
@@ -1641,6 +1643,12 @@ async function loadArtist(id) {
                  tracks.push(obj);
              }
         }
+        
+        if ((obj.type === 'ALBUM' || (obj.numberOfTracks && obj.releaseDate)) && obj.title && obj.cover) {
+            if (!albums.some(a => a.id === obj.id)) {
+                albums.push(obj);
+            }
+        }
 
         Object.values(obj).forEach(scan);
     };
@@ -1651,10 +1659,12 @@ async function loadArtist(id) {
     if(!artist) throw new Error("Artist not found in response");
 
     tracks.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    albums.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
 
     return {
         ...artist,
-        topTracks: tracks.slice(0, 30)
+        topTracks: tracks.slice(0, 30),
+        albums: albums
     };
 }
 
@@ -1688,6 +1698,22 @@ function renderArtistPage(artist) {
              artistTopTracksGrid.appendChild(card);
         });
     }
+
+    renderDiscography(artist.albums);
+}
+
+function renderDiscography(albums) {
+    artistDiscographyGrid.innerHTML = "";
+
+    if (!albums || albums.length === 0) {
+        artistDiscographyGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No albums found.</div>';
+        return;
+    }
+
+    albums.forEach(album => {
+        const card = createAlbumCard(album);
+        artistDiscographyGrid.appendChild(card);
+    });
 }
 
 window.showArtistPage = showArtistPage;
