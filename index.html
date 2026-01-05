@@ -294,13 +294,23 @@
                     <div class="flex-1 w-full">
                         <p class="mb-2 text-sm text-gray-400 font-medium tracking-wider">PLAYLIST</p>
                         <h1 id="playlistPageTitle" class="mb-2 text-3xl font-bold md:text-5xl text-white">Playlist Title</h1>
-                         <p id="playlistPageCount" class="text-gray-400 text-sm mb-4">0 tracks</p>
+                         <p class="text-gray-400 text-sm mb-4">
+                            <span id="playlistPageCount">0 tracks</span>
+                            <span class="mx-1">•</span>
+                            <span id="playlistPageDuration">0:00</span>
+                         </p>
                         
 
-                         <button id="playPlaylistPageBtn" class="mt-2 flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20">
-                            <i data-lucide="play" class="fill-current" style="width: 20px; height: 20px"></i>
-                            Play
-                        </button>
+                         <div class="flex items-center gap-3 mt-2">
+                             <button id="playPlaylistPageBtn" class="flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20">
+                                <i data-lucide="play" class="fill-current" style="width: 20px; height: 20px"></i>
+                                Play
+                            </button>
+                            <button id="editPlaylistBtn" class="flex items-center gap-2 rounded-full bg-gray-700 px-6 py-3 font-medium text-white transition-colors hover:bg-gray-600">
+                                <i data-lucide="pencil" style="width: 18px; height: 18px"></i>
+                                Edit
+                            </button>
+                         </div>
                     </div>
                 </div>
 
@@ -691,23 +701,25 @@
 
                 let isMinimized = false;
 
-                minimizeBtn.addEventListener('click', function() {
-                    isMinimized = !isMinimized;
+                if (minimizeBtn) {
+                    minimizeBtn.addEventListener('click', function() {
+                        isMinimized = !isMinimized;
 
-                    if (isMinimized) {
-                        playerBackdrop.classList.add('minimized');
-                        minimizeIcon.style.display = 'none';
-                        maximizeIcon.style.display = 'flex';
-                        minimizeBtn.setAttribute('title', 'maximize player');
-                        minimizeBtn.setAttribute('aria-label', 'Maximize player');
-                    } else {
-                        playerBackdrop.classList.remove('minimized');
-                        minimizeIcon.style.display = 'flex';
-                        maximizeIcon.style.display = 'none';
-                        minimizeBtn.setAttribute('title', 'minimize player');
-                        minimizeBtn.setAttribute('aria-label', 'Minimize player');
-                    }
-                });
+                        if (isMinimized) {
+                            playerBackdrop.classList.add('minimized');
+                            minimizeIcon.style.display = 'none';
+                            maximizeIcon.style.display = 'flex';
+                            minimizeBtn.setAttribute('title', 'maximize player');
+                            minimizeBtn.setAttribute('aria-label', 'Maximize player');
+                        } else {
+                            playerBackdrop.classList.remove('minimized');
+                            minimizeIcon.style.display = 'flex';
+                            maximizeIcon.style.display = 'none';
+                            minimizeBtn.setAttribute('title', 'minimize player');
+                            minimizeBtn.setAttribute('aria-label', 'Minimize player');
+                        }
+                    });
+                }
             });
         </script>
         <script type="module">
