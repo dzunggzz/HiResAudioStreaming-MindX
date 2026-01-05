@@ -94,6 +94,7 @@ let queue = [];
 let currentSong = 0;
 let isPlaying = false;
 let currentSearchMode = "tracks";
+let currentPlayingTrackId = null;
 
 let favorites = [];
 let userPlaylists = [];
@@ -520,22 +521,34 @@ function displayResults(songs) {
   });
 }
 
-function createTrackCard(song, index, list = currentList) {
+function createTrackCard(song, index, list = currentList, options = {}) {
+  const showIndex = options.showIndex !== undefined ? options.showIndex : false;
+  const trackNumber = options.trackNumber !== undefined ? options.trackNumber : (index + 1);
+  const isCurrentlyPlaying = song.id === currentPlayingTrackId;
+  
   const card = document.createElement("div");
-  card.className =
-    "group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors border border-transparent hover:border-blue-700 hover:bg-gray-800/70";
+  card.className = `group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors border ${isCurrentlyPlaying ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent hover:border-blue-700 hover:bg-gray-800/70'}`;
+  card.dataset.trackId = song.id;
 
   const imageUrl = `${IMAGE_API_BASE}${song.album.cover
     .split("-")
     .join("/")}/320x320.jpg`;
   const isFav = isFavorite(song);
 
+  const trackNumberHtml = showIndex ? `
+        <div class="flex-shrink-0 w-8 text-center">
+            <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'} group-hover:hidden">${trackNumber}</span>
+            <svg class="play-icon hidden group-hover:block mx-auto text-white" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,3 19,12 5,21"></polygon>
+            </svg>
+        </div>
+    ` : '';
+
   card.innerHTML = `
-        <img src="${imageUrl}" alt="${
-    song.title
-  }" class="h-[64px] w-[64px] rounded object-cover">
+        ${trackNumberHtml}
+        <img src="${imageUrl}" alt="${song.title}" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold text-white group-hover:text-blue-400 transition-colors">${song.title}</h3>
+            <h3 class="break-words font-semibold ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
             <a class="artist-link break-words text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
               song.artist.name
             }</a>
@@ -805,6 +818,44 @@ function createQueueItem(song, index) {
   return li;
 }
 
+function updateTrackHighlighting() {
+    const allCards = document.querySelectorAll('[data-track-id]');
+    allCards.forEach(card => {
+        const trackId = parseInt(card.dataset.trackId, 10);
+        const isPlaying = trackId === currentPlayingTrackId;
+
+        if (isPlaying) {
+            card.classList.remove('border-transparent', 'hover:border-blue-700', 'hover:bg-gray-800/70');
+            card.classList.add('border-blue-500/50', 'bg-blue-900/20');
+        } else {
+            card.classList.remove('border-blue-500/50', 'bg-blue-900/20');
+            card.classList.add('border-transparent', 'hover:border-blue-700', 'hover:bg-gray-800/70');
+        }
+
+        const title = card.querySelector('h3');
+        if (title) {
+            if (isPlaying) {
+                title.classList.remove('text-white');
+                title.classList.add('text-blue-400');
+            } else {
+                title.classList.remove('text-blue-400');
+                title.classList.add('text-white');
+            }
+        }
+
+        const trackNum = card.querySelector('.track-number');
+        if (trackNum) {
+            if (isPlaying) {
+                trackNum.classList.remove('text-gray-400');
+                trackNum.classList.add('text-blue-400');
+            } else {
+                trackNum.classList.remove('text-blue-400');
+                trackNum.classList.add('text-gray-400');
+            }
+        }
+    });
+}
+
 async function playSong(index, list = currentList) {
   const song = list[index];
   if (!song) return;
@@ -822,6 +873,9 @@ async function playSongFromQueue(index, forcePlay = false) {
   if (!song) return;
 
   currentSong = index;
+
+  currentPlayingTrackId = song.id;
+  updateTrackHighlighting();
 
   try {
     if (isPlaying) {
@@ -849,9 +903,11 @@ async function playSongFromQueue(index, forcePlay = false) {
     const audioObject = JSON.parse(utf8String);
 
     audio.src = audioObject.urls[0];
-    albumArt.src = `${IMAGE_API_BASE}${song.album.cover
+    const albumCoverUrl = `${IMAGE_API_BASE}${song.album.cover
       .split("-")
       .join("/")}/320x320.jpg`;
+    albumArt.src = albumCoverUrl;
+
     songTitle.textContent = song.title;
     
     songArtist.textContent = song.artist.name;
@@ -1040,8 +1096,6 @@ audio.addEventListener("timeupdate", () => {
         amLyricsElement.currentTime = audio.currentTime * 1000;
     }
     durationEl.textContent = formatTime(audio.duration);
-
-    liricle.sync(audio.currentTime);
   }
 });
 
@@ -1439,7 +1493,8 @@ function displayAlbumTracks(tracks) {
     document.getElementById("albumPageDuration").textContent = formatTime(totalDuration); 
 
     tracks.forEach((track, index) => {
-        const card = createTrackCard(track); 
+        const trackNum = track.trackNumber || (index + 1);
+        const card = createTrackCard(track, index, tracks, { showIndex: true, trackNumber: trackNum }); 
         card.onclick = (e) => {
              e.stopPropagation();
              playSong(index, tracks);
@@ -1487,14 +1542,20 @@ async function playAlbumContext(albumId) {
 
 
 let currentPlaylistIndex = null;
+let playlistEditMode = false;
+let playlistSortable = null;
 
 function showPlaylistPage(playlist, index) {
     currentPlaylistIndex = index;
+    playlistEditMode = false;
+    
     const page = document.getElementById("playlistPage");
-    const mainContent = document.querySelector("main"); 
 
     document.getElementById("playlistPageTitle").textContent = playlist.title;
     document.getElementById("playlistPageCount").textContent = `${playlist.tracks.length} tracks`;
+
+    const totalDuration = playlist.tracks.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+    document.getElementById("playlistPageDuration").textContent = formatTime(totalDuration);
 
     let imageUrl = "https://placehold.co/320x320/1f2937/ffffff?text=Playlist";
     if (playlist.image) {
@@ -1504,45 +1565,9 @@ function showPlaylistPage(playlist, index) {
     }
     document.getElementById("playlistPageImage").src = imageUrl;
 
-    const grid = document.getElementById("playlistTracksGrid");
-    grid.innerHTML = "";
-    
-    if (playlist.tracks && playlist.tracks.length > 0) {
-        playlist.tracks.forEach((track, trackIndex) => {
-
-            const card = createTrackCard(track); 
-             card.addEventListener("click", (e) => {
-                e.stopPropagation(); 
-                playSong(trackIndex, playlist.tracks);
-            });
-            const actionsDiv = card.querySelector('.flex.items-center.gap-2.text-sm.text-gray-400');
-            if (actionsDiv) {
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = "rounded-full p-2 text-gray-400 transition-colors hover:text-red-400";
-                deleteBtn.title = "remove from playlist";
-                deleteBtn.innerHTML = `
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                `;
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    if (confirm(`Remove "${track.title}" from this playlist?`)) {
-                        await deleteTrackFromPlaylist(index, trackIndex);
-                    }
-                };
-                actionsDiv.insertBefore(deleteBtn, actionsDiv.lastElementChild);
-            }
-            
-            grid.appendChild(card);
-        });
-    } else {
-        grid.innerHTML = `<p class="text-gray-400 text-center py-8">No tracks in this playlist yet.</p>`;
-    }
+    renderPlaylistTracks(playlist, index, false);
 
     const deleteBtn = document.getElementById("deletePlaylistPageBtn");
-
     const newDeleteBtn = deleteBtn.cloneNode(true);
     deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
     
@@ -1563,8 +1588,225 @@ function showPlaylistPage(playlist, index) {
         }
     });
 
+    const editBtn = document.getElementById("editPlaylistBtn");
+    const newEditBtn = editBtn.cloneNode(true);
+    editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+
+    newEditBtn.addEventListener("click", () => {
+        playlistEditMode = !playlistEditMode;
+        renderPlaylistTracks(userPlaylists[index], index, playlistEditMode);
+
+        const icon = newEditBtn.querySelector('i');
+        if (playlistEditMode) {
+            newEditBtn.innerHTML = `<i data-lucide="check" style="width: 18px; height: 18px"></i> Done`;
+            newEditBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+            newEditBtn.classList.add('bg-green-600', 'hover:bg-green-500');
+        } else {
+            newEditBtn.innerHTML = `<i data-lucide="pencil" style="width: 18px; height: 18px"></i> Edit`;
+            newEditBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
+            newEditBtn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        }
+        lucide.createIcons();
+    });
+
     if(document.getElementById("artistPage")) document.getElementById("artistPage").classList.add("hidden");
     page.classList.remove("hidden");
+    lucide.createIcons();
+}
+
+function renderPlaylistTracks(playlist, playlistIndex, editMode) {
+    const grid = document.getElementById("playlistTracksGrid");
+    grid.innerHTML = "";
+    if (playlistSortable) {
+        playlistSortable.destroy();
+        playlistSortable = null;
+    }
+    
+    if (!playlist.tracks || playlist.tracks.length === 0) {
+        grid.innerHTML = `<p class="text-gray-400 text-center py-8">No tracks in this playlist yet.</p>`;
+        return;
+    }
+
+    if (editMode) {
+        const toolbar = document.createElement('div');
+        toolbar.className = 'flex items-center justify-between mb-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700';
+        toolbar.innerHTML = `
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="selectAllTracks" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500">
+                <label for="selectAllTracks" class="text-sm text-gray-400">Select all</label>
+            </div>
+            <button id="deleteSelectedTracks" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3,6 5,6 21,6"></polyline>
+                    <path d="M19,6v14a2,2,0,0,1,-2,2H7a2,2,0,0,1,-2,-2V6m3,0V4a2,2,0,0,1,2,-2h4a2,2,0,0,1,2,2v2"></path>
+                </svg>
+                Delete selected
+            </button>
+        `;
+        grid.appendChild(toolbar);
+        toolbar.querySelector('#selectAllTracks').addEventListener('change', (e) => {
+            const checkboxes = grid.querySelectorAll('.track-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateDeleteButtonState();
+        });
+
+        toolbar.querySelector('#deleteSelectedTracks').addEventListener('click', async () => {
+            const checkboxes = grid.querySelectorAll('.track-checkbox:checked');
+            const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.trackIndex, 10)).sort((a, b) => b - a);
+            
+            if (indicesToDelete.length === 0) return;
+            
+            if (confirm(`Delete ${indicesToDelete.length} track(s) from this playlist?`)) {
+                for (const idx of indicesToDelete) {
+                    await deleteTrackFromPlaylistSilent(playlistIndex, idx);
+                }
+                renderPlaylistTracks(userPlaylists[playlistIndex], playlistIndex, true);
+                document.getElementById("playlistPageCount").textContent = `${userPlaylists[playlistIndex].tracks.length} tracks`;
+                const totalDuration = userPlaylists[playlistIndex].tracks.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+                document.getElementById("playlistPageDuration").textContent = formatTime(totalDuration);
+            }
+        });
+    }
+
+    const trackContainer = document.createElement('div');
+    trackContainer.id = 'playlistTrackContainer';
+    trackContainer.className = 'flex flex-col gap-1';
+    grid.appendChild(trackContainer);
+
+    playlist.tracks.forEach((track, trackIndex) => {
+        const card = document.createElement('div');
+        card.className = `group flex w-full items-center gap-3 rounded-lg p-3 transition-colors border ${track.id === currentPlayingTrackId ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent hover:border-blue-700 hover:bg-gray-800/70'}`;
+        card.dataset.trackId = track.id;
+        card.dataset.trackIndex = trackIndex;
+
+        const imageUrl = `${IMAGE_API_BASE}${track.album.cover.split("-").join("/")}/320x320.jpg`;
+        const isCurrentlyPlaying = track.id === currentPlayingTrackId;
+
+        if (editMode) {
+            card.innerHTML = `
+                <input type="checkbox" class="track-checkbox w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500" data-track-index="${trackIndex}">
+                <div class="drag-handle cursor-grab p-1 text-gray-500 hover:text-white">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                        <line x1="8" y1="18" x2="16" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="flex-shrink-0 w-6 text-center">
+                    <span class="text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'}">${trackIndex + 1}</span>
+                </div>
+                <img src="${imageUrl}" alt="${track.title}" class="h-12 w-12 rounded object-cover">
+                <div class="min-w-0 flex-1">
+                    <h3 class="truncate font-medium ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white'}">${track.title}</h3>
+                    <p class="truncate text-sm text-gray-400">${track.artist.name}</p>
+                </div>
+                <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
+            `;
+            
+            card.querySelector('.track-checkbox').addEventListener('change', updateDeleteButtonState);
+        } else {
+            card.innerHTML = `
+                <div class="flex-shrink-0 w-8 text-center">
+                    <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'} group-hover:hidden">${trackIndex + 1}</span>
+                    <svg class="play-icon hidden group-hover:block mx-auto text-white" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                </div>
+                <img src="${imageUrl}" alt="${track.title}" class="h-12 w-12 rounded object-cover">
+                <div class="min-w-0 flex-1">
+                    <h3 class="truncate font-medium ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
+                    <p class="truncate text-sm text-gray-400">${track.artist.name}</p>
+                </div>
+                <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
+            `;
+            
+            card.addEventListener("click", (e) => {
+                e.stopPropagation();
+                playSong(trackIndex, playlist.tracks);
+            });
+        }
+        
+        trackContainer.appendChild(card);
+    });
+
+    if (editMode && typeof Sortable !== 'undefined') {
+        playlistSortable = new Sortable(trackContainer, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'opacity-50',
+            onEnd: async function(evt) {
+                const oldIndex = evt.oldIndex;
+                const newIndex = evt.newIndex;
+                
+                if (oldIndex !== newIndex) {
+                    await reorderPlaylistTrack(playlistIndex, oldIndex, newIndex);
+                    renderPlaylistTracks(userPlaylists[playlistIndex], playlistIndex, true);
+                }
+            }
+        });
+    }
+}
+
+function updateDeleteButtonState() {
+    const deleteBtn = document.getElementById('deleteSelectedTracks');
+    const checkboxes = document.querySelectorAll('.track-checkbox:checked');
+    if (deleteBtn) {
+        deleteBtn.disabled = checkboxes.length === 0;
+    }
+}
+
+async function deleteTrackFromPlaylistSilent(playlistIndex, trackIndex) {
+    if (!currentUser || playlistIndex < 0 || playlistIndex >= userPlaylists.length) return;
+
+    const playlist = userPlaylists[playlistIndex];
+    if (!playlist || !playlist.tracks) return;
+    
+    const trackToRemove = playlist.tracks[trackIndex];
+    const updatedTracks = [...playlist.tracks];
+    updatedTracks.splice(trackIndex, 1);
+
+    const updatedPlaylist = {
+        ...playlist,
+        tracks: updatedTracks,
+        numberOfTracks: updatedTracks.length,
+        duration: Math.max(0, (playlist.duration || 0) - (trackToRemove.duration || 0)),
+        lastUpdated: new Date().toISOString(),
+    };
+
+    try {
+        const docRef = doc(window.db, "playlists", currentUser.uid);
+        await updateDoc(docRef, { playlists: arrayRemove(playlist) });
+        await updateDoc(docRef, { playlists: arrayUnion(updatedPlaylist) });
+        userPlaylists[playlistIndex] = updatedPlaylist;
+    } catch (error) {
+        console.error("Error removing track from playlist:", error);
+    }
+}
+
+async function reorderPlaylistTrack(playlistIndex, oldIndex, newIndex) {
+    if (!currentUser || playlistIndex < 0 || playlistIndex >= userPlaylists.length) return;
+
+    const playlist = userPlaylists[playlistIndex];
+    if (!playlist || !playlist.tracks) return;
+
+    const updatedTracks = [...playlist.tracks];
+    const [movedTrack] = updatedTracks.splice(oldIndex, 1);
+    updatedTracks.splice(newIndex, 0, movedTrack);
+
+    const updatedPlaylist = {
+        ...playlist,
+        tracks: updatedTracks,
+        lastUpdated: new Date().toISOString(),
+    };
+
+    try {
+        const docRef = doc(window.db, "playlists", currentUser.uid);
+        await updateDoc(docRef, { playlists: arrayRemove(playlist) });
+        await updateDoc(docRef, { playlists: arrayUnion(updatedPlaylist) });
+        userPlaylists[playlistIndex] = updatedPlaylist;
+    } catch (error) {
+        console.error("Error reordering playlist:", error);
+    }
 }
 
 function closePlaylistPage() {
