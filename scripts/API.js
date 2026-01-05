@@ -1515,6 +1515,25 @@ function showPlaylistPage(playlist, index) {
                 e.stopPropagation(); 
                 playSong(trackIndex, playlist.tracks);
             });
+            const actionsDiv = card.querySelector('.flex.items-center.gap-2.text-sm.text-gray-400');
+            if (actionsDiv) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = "rounded-full p-2 text-gray-400 transition-colors hover:text-red-400";
+                deleteBtn.title = "remove from playlist";
+                deleteBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                `;
+                deleteBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Remove "${track.title}" from this playlist?`)) {
+                        await deleteTrackFromPlaylist(index, trackIndex);
+                    }
+                };
+                actionsDiv.insertBefore(deleteBtn, actionsDiv.lastElementChild);
+            }
             
             grid.appendChild(card);
         });
@@ -2031,3 +2050,55 @@ audio.addEventListener('play', () => {
 audio.addEventListener('pause', () => {
     stopLyricsSync();
 });
+
+async function deleteTrackFromPlaylist(playlistIndex, trackIndex) {
+    if (
+        !currentUser ||
+        playlistIndex < 0 ||
+        playlistIndex >= userPlaylists.length
+    )
+        return;
+
+    const playlist = userPlaylists[playlistIndex];
+    if (!playlist || !playlist.tracks) return;
+    
+    const trackToRemove = playlist.tracks[trackIndex];
+
+    const updatedTracks = [...playlist.tracks];
+    updatedTracks.splice(trackIndex, 1);
+
+    const updatedPlaylist = {
+        ...playlist,
+        tracks: updatedTracks,
+        numberOfTracks: updatedTracks.length,
+        duration: Math.max(0, (playlist.duration || 0) - (trackToRemove.duration || 0)),
+        lastUpdated: new Date().toISOString(),
+    };
+
+    try {
+        const docRef = doc(window.db, "playlists", currentUser.uid);
+        
+        await updateDoc(docRef, {
+            playlists: arrayRemove(playlist),
+        });
+
+        await updateDoc(docRef, {
+            playlists: arrayUnion(updatedPlaylist),
+        });
+
+        userPlaylists[playlistIndex] = updatedPlaylist;
+
+        if (typeof currentPlaylistIndex !== 'undefined' && currentPlaylistIndex === playlistIndex) {
+            showPlaylistPage(updatedPlaylist, playlistIndex);
+        }
+
+        if (typeof currentSearchMode !== 'undefined' && currentSearchMode === "myPlaylists") {
+            displayMyPlaylists();
+        }
+
+        console.log(`Removed "${trackToRemove.title}" from "${playlist.title}"`);
+    } catch (error) {
+        console.error("Error removing track from playlist:", error);
+        alert("Failed to remove track due to an error.");
+    }
+}
