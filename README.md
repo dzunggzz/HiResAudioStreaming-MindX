@@ -17,7 +17,8 @@ Changelog (as of 5th Jan. 2026):
 - [x] Revamped My Playlists, there's also a dedicated page for it
 - [x] Revamped Lyrics (W uimaxbai) 
 - [x] Forgot Password functionalities
-- [x] Removed Top tracks tab 
+- [x] Removed Top tracks tab
+- [x] Added Remove Track from Playlist functionality 
 
 Issues: ~~Track and Artist search functions are broken, no fix lol~~
 
