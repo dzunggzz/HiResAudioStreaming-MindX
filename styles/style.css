@@ -53,6 +53,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow: auto;
+  padding-bottom: 140px;
 }
 
 #resultsContainer {
@@ -60,34 +61,12 @@ body {
   overflow-y: auto;
 }
 
-#resultsGrid {
-  row-gap: 10px;
-  display: grid;
-}
 
-.player {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: transparent;
-  border-top: 1px solid rgba(148, 163, 184, 0.2);
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.4), 0 2px 8px rgba(15, 23, 42, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  padding: 0.75rem 1.5rem;
-  z-index: 50;
-}
 
-.player-content {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  align-items: center;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
+
+
+
+
 
 .current-track {
   display: flex;

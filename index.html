@@ -27,10 +27,8 @@
                 </div>
                 <p class="mx-auto max-w-2xl text-xl text-gray-400">
                     Try some Touhou music if you don't know what to listen to!
-                    <br />
-                    Or check out the Top Tracks tab!
                 </p>
-                <button id="logoutBtn" class="absolute top-4 right-4 flex items-center gap-2 text-white p-2 rounded hover:text-gray-300 transition-colors" title="logout">
+                <button id="logoutBtn" class="absolute top-4 right-4 flex items-center gap-2 rounded-full transition-colors text-gray-400 hover:text-white hover:bg-white/10 px-4 py-2" title="logout">
                     <i data-lucide="log-out" style="width: 16px; height: 16px"></i>
                    <span class="text-sm font-semibold">Logout</span>
                 </button>
@@ -204,7 +202,7 @@
                 </nav>
 
                 <section id="resultsContainer">
-                    <div id="resultsGrid">
+                    <div id="resultsGrid" class="flex flex-col gap-1">
                     </div>
                 </section>
             </div>
@@ -376,239 +374,225 @@
             </div>
         </div>
 
-        <footer class="player">
-            <div
-                class="audio-player-backdrop fixed inset-x-0 bottom-0 z-50 px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10"
-                style="top: -140.5px; padding: 0"
-            >
-                <div class="relative mx-auto w-full max-w-screen-2xl">
-                    <div
-                        class="audio-player-glass overflow-hidden rounded-2xl border shadow-2xl"
-                    >
-                        <button id="minimizeBtn" class="absolute top-2 left-1/2  text-gray-400 transition-all duration-300 hover:text-white bg-gray-800/50 backdrop-blur-sm rounded-full p-2 border border-gray-600/50 hover:border-blue-400/50 hover:bg-blue-500/10" title="minimize player" aria-label="Minimize player">
-                            <i
-                                data-lucide="chevron-down"
-                                class="minimize-icon transition-transform duration-300"
-                                style="width: 20px; height: 20px;"
-                            ></i>
-                            <i
-                                data-lucide="chevron-up"
-                                class="maximize-icon transition-transform duration-300"
-                                style="width: 20px; height: 20px; display: none;"
-                            ></i>
-                        </button>
-                        <div class="relative px-4 py-3">
-                            <div class="mb-3">
-                                <div class="progress-section">
-                                    <div id="progressContainer" style="cursor: pointer;">
-                                        <div id="bufferBar"></div>
-                                        <div id="progressBar"></div>
-                                    </div>
+        <footer id="appFooter" class="py-8 text-center text-sm text-gray-500">
+            <span class="mx-2">made with love by dzunggzz</span>
+            <span class="mx-2">•</span>
+            <span class="mx-2">check out <a href="https://github.com/uimaxbai/tidal-ui" class="underline hover:text-blue-400 transition-colors">uimaxbai</a> and <a href="https://github.com/sachinsenal0x64/hifi" class="underline hover:text-blue-400 transition-colors">sachinsenal0x64</a> on github</span>
+        </footer>
+
+        <div
+            class="audio-player-backdrop fixed inset-x-0 bottom-9 z-50 px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10"
+            style="top: auto; padding: 0"
+        >
+            <div class="relative mx-auto w-full max-w-screen-2xl">
+                <div
+                    class="audio-player-glass overflow-hidden rounded-2xl border shadow-2xl"
+                >
+                    <div class="relative px-4 py-3">
+                        <div class="mb-3">
+                            <div class="progress-section">
+                                <div id="progressContainer" style="cursor: pointer;">
+                                    <div id="bufferBar"></div>
+                                    <div id="progressBar"></div>
                                 </div>
-                                <div
-                                    class="mt-1 flex justify-between text-xs text-gray-400"
-                                >
-                                    <span id="currentTime">0:00</span>
-                                    <span id="duration">0:00</span>
+                            </div>
+                            <div
+                                class="mt-1 flex justify-between text-xs text-gray-400"
+                            >
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <div
+                                class="flex min-w-0 items-center gap-3 sm:flex-1"
+                            >
+                                <img
+                                    id="albumArt"
+                                    src="https://placehold.co/64x64"
+                                    alt="album art"
+                                    class="h-12 w-12 sm:h-16 sm:w-16 rounded object-cover shadow-lg"
+                                />
+                                <div class="min-w-0 flex-1">
+                                    <h3
+                                        class="truncate font-semibold text-white"
+                                        id="songTitle"
+                                    >
+                                        —
+                                    </h3>
+                                    <a
+                                        class="truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block"
+                                        id="songArtist"
+                                        >—</a
+                                    >
+                                    <p class="text-xs text-gray-500">
+                                        <span id="albumTitle" class="hover:text-blue-400 hover:underline cursor-pointer transition-colors">—</span>
+                                        <span
+                                            class="mx-1"
+                                            aria-hidden="true"
+                                            >•</span
+                                        >
+                                        <span id="qualityLabel">—</span>
+                                    </p>
                                 </div>
                             </div>
 
                             <div
-                                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                                class="flex flex-nowrap items-center justify-between gap-2 sm:gap-4"
                             >
                                 <div
-                                    class="flex min-w-0 items-center gap-3 sm:flex-1"
+                                    class="flex items-center justify-center gap-1 sm:gap-2"
                                 >
-                                    <img
-                                        id="albumArt"
-                                        src="https://placehold.co/64x64"
-                                        alt="album art"
-                                        class="h-12 w-12 sm:h-16 sm:w-16 rounded object-cover shadow-lg"
-                                    />
-                                    <div class="min-w-0 flex-1">
-                                        <h3
-                                            class="truncate font-semibold text-white"
-                                            id="songTitle"
-                                        >
-                                            —
-                                        </h3>
-                                        <a
-                                            class="truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block"
-                                            id="songArtist"
-                                            >—</a
-                                        >
-                                        <p class="text-xs text-gray-500">
-                                            <span id="albumTitle" class="hover:text-blue-400 hover:underline cursor-pointer transition-colors">—</span>
-                                            <span
-                                                class="mx-1"
-                                                aria-hidden="true"
-                                                >•</span
-                                            >
-                                            <span id="qualityLabel">—</span>
-                                        </p>
-                                    </div>
+                                    <button
+                                        id="prevBtn"
+                                        class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
+                                        title="previous"
+                                        aria-label="Previous track"
+                                    >
+                                        <i
+                                            data-lucide="skip-back"
+                                            style="
+                                                width: 18px;
+                                                height: 18px;
+                                            "
+                                        ></i>
+                                    </button>
+                                    <button
+                                        id="playBtn"
+                                        class="rounded-full bg-white p-2.5 sm:p-3 text-gray-900 transition-transform hover:scale-105"
+                                        title="play/pause"
+                                        aria-label="Play or pause"
+                                    >
+                                        <i
+                                            data-lucide="play"
+                                            class="play-icon"
+                                            style="
+                                                width: 20px;
+                                                height: 20px;
+                                            "
+                                        ></i>
+                                        <i
+                                            data-lucide="pause"
+                                            class="pause-icon"
+                                            style="
+                                                display: none;
+                                                width: 20px;
+                                                height: 20px;
+                                            "
+                                        ></i>
+                                    </button>
+                                    <button
+                                        id="nextBtn"
+                                        class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
+                                        title="next"
+                                        aria-label="Next track"
+                                    >
+                                        <i
+                                            data-lucide="skip-forward"
+                                            style="
+                                                width: 18px;
+                                                height: 18px;
+                                            "
+                                        ></i>
+                                    </button>
                                 </div>
 
-                                <div
-                                    class="flex flex-nowrap items-center justify-between gap-2 sm:gap-4"
-                                >
-                                    <div
-                                        class="flex items-center justify-center gap-1 sm:gap-2"
+                                <div class="hidden sm:flex items-center gap-2">
+                                    <button
+                                        id="muteBtn"
+                                        class="p-1 sm:p-2 text-gray-400 transition-colors hover:text-white"
+                                        title="volume"
+                                        aria-label="Volume control"
                                     >
-                                        <button
-                                            id="prevBtn"
-                                            class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
-                                            title="previous"
-                                            aria-label="Previous track"
-                                        >
-                                            <i
-                                                data-lucide="skip-back"
-                                                style="
-                                                    width: 18px;
-                                                    height: 18px;
-                                                "
-                                            ></i>
-                                        </button>
-                                        <button
-                                            id="playBtn"
-                                            class="rounded-full bg-white p-2.5 sm:p-3 text-gray-900 transition-transform hover:scale-105"
-                                            title="play/pause"
-                                            aria-label="Play or pause"
-                                        >
-                                            <i
-                                                data-lucide="play"
-                                                class="play-icon"
-                                                style="
-                                                    width: 20px;
-                                                    height: 20px;
-                                                "
-                                            ></i>
-                                            <i
-                                                data-lucide="pause"
-                                                class="pause-icon"
-                                                style="
-                                                    display: none;
-                                                    width: 20px;
-                                                    height: 20px;
-                                                "
-                                            ></i>
-                                        </button>
-                                        <button
-                                            id="nextBtn"
-                                            class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
-                                            title="next"
-                                            aria-label="Next track"
-                                        >
-                                            <i
-                                                data-lucide="skip-forward"
-                                                style="
-                                                    width: 18px;
-                                                    height: 18px;
-                                                "
-                                            ></i>
-                                        </button>
-                                    </div>
+                                        <i
+                                            data-lucide="volume-2"
+                                            style="
+                                                width: 16px;
+                                                height: 16px;
+                                            "
+                                        ></i>
+                                    </button>
+                                    <input
+                                        id="volumeSlider"
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.01"
+                                        value="0.7"
+                                        class="h-1 w-16 sm:w-24 cursor-pointer appearance-none rounded-lg bg-gray-700 accent-white"
+                                        aria-label="Volume level"
+                                    />
+                                </div>
 
-                                    <div class="flex items-center gap-2">
-                                        <button
-                                            class="p-1 sm:p-2 text-gray-400 transition-colors hover:text-white"
-                                            title="volume"
-                                            aria-label="Volume control"
-                                        >
-                                            <i
-                                                data-lucide="volume-2"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            ></i>
-                                        </button>
-                                        <input
-                                            id="volumeSlider"
-                                            type="range"
-                                            min="0"
-                                            max="1"
-                                            step="0.01"
-                                            value="0.7"
-                                            class="h-1 w-16 sm:w-24 cursor-pointer appearance-none rounded-lg bg-gray-700 accent-white"
-                                            aria-label="Volume level"
-                                        />
-                                    </div>
-
-                                    <div class="flex items-center gap-2">
-                                        <button
-                                            id="queueBtn"
-                                            class="p-1.5 sm:p-2"
-                                            title="queue"
-                                            aria-label="Toggle queue panel"
-                                        >
-                                            <i
-                                                data-lucide="list-music"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            ></i>
-                                            <span id="queueCount" style="display: none !important;">
-                                            </span>
-                                        </button>
-                                        <button
-                                            id="equalizerBtn"
-                                            class="p-1.5 sm:p-2 transition-colors"
-                                            title="equalizer"
-                                            aria-label="Toggle equalizer"
-                                        >
-                                            <i
-                                                data-lucide="sliders"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            ></i>
-                                        </button>
-                                        <button
-                                            id="lyricsBtn"
-                                            class="p-1.5 sm:p-2"
-                                            title="lyrics"
-                                            aria-label="Show lyrics"
-                                        >
-                                            <i
-                                                data-lucide="file-text"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            ></i>
-                                        </button>
-                                        <button
-                                            id="repeatBtn"
-                                            class="p-1.5 sm:p-2 text-gray-400"
-                                            title="repeat"
-                                            aria-label="Toggle repeat mode"
-                                        >
-                                            <i
-                                                data-lucide="repeat"
-                                                style="
-                                                    width: 16px;
-                                                    height: 16px;
-                                                "
-                                            ></i>
-                                        </button>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        id="queueBtn"
+                                        class="p-1.5 sm:p-2"
+                                        title="queue"
+                                        aria-label="Toggle queue panel"
+                                    >
+                                        <i
+                                            data-lucide="list-music"
+                                            style="
+                                                width: 16px;
+                                                height: 16px;
+                                            "
+                                        ></i>
+                                        <span id="queueCount" style="display: none !important;">
+                                        </span>
+                                    </button>
+                                    <button
+                                        id="equalizerBtn"
+                                        class="hidden sm:block p-1.5 sm:p-2 transition-colors"
+                                        title="equalizer"
+                                        aria-label="Toggle equalizer"
+                                    >
+                                        <i
+                                            data-lucide="sliders"
+                                            style="
+                                                width: 16px;
+                                                height: 16px;
+                                            "
+                                        ></i>
+                                    </button>
+                                    <button
+                                        id="lyricsBtn"
+                                        class="p-1.5 sm:p-2"
+                                        title="lyrics"
+                                        aria-label="Show lyrics"
+                                    >
+                                        <i
+                                            data-lucide="file-text"
+                                            style="
+                                                width: 16px;
+                                                height: 16px;
+                                            "
+                                        ></i>
+                                    </button>
+                                    <button
+                                        id="repeatBtn"
+                                        class="p-1.5 sm:p-2 text-gray-400"
+                                        title="repeat"
+                                        aria-label="Toggle repeat mode"
+                                    >
+                                        <i
+                                            data-lucide="repeat"
+                                            style="
+                                                width: 16px;
+                                                height: 16px;
+                                            "
+                                        ></i>
+                                    </button>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center py-4 text-gray-400">
-                <span class="mx-2">made with love by dzunggzz</span> <br>
-                <span class="mx-2">please check out <a href="https://github.com/uimaxbai/tidal-ui" class="underline">uimaxbai</a> and <a href="https://github.com/sachinsenal0x64/hifi" class="underline">sachinsenal0x64</a> on github</span>
-                
-            </div>
-        </footer>
+        </div>
 
         <audio id="audio" crossorigin="anonymous"></audio>
         

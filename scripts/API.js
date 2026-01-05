@@ -10,12 +10,9 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const API_BASES = [
-  "https://vogel.qqdl.site",
-  // "https://tidal-api-2.binimum.org",
-  // "https://triton.squid.wtf",
+  "https://triton.squid.wtf",
+  "https://tidal-api-2.binimum.org"
 ];
-
-const ALBUM_API_BASE = "https://triton.squid.wtf/album";
 
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
 const TRACK_INFO_API_BASE = "https://triton.squid.wtf/info";
@@ -61,6 +58,7 @@ const bufferBar = document.getElementById("bufferBar");
 const currentTimeEl = document.getElementById("currentTime");
 const durationEl = document.getElementById("duration");
 const volumeSlider = document.getElementById("volumeSlider");
+const muteBtn = document.getElementById("muteBtn");
 const progressContainer = document.getElementById("progressContainer");
 
 const searchBtn = document.getElementById("searchBtn");
@@ -130,6 +128,19 @@ async function loadFavoritesFromFirestore() {
   }
 }
 let repeatMode = "off";
+
+
+let currentVolume = parseFloat(localStorage.getItem("tidal_volume") || "0.7");
+let isMuted = localStorage.getItem("tidal_muted") === "true";
+let previousVolume = parseFloat(localStorage.getItem("tidal_prev_volume") || "0.7");
+
+if (volumeSlider) {
+    volumeSlider.value = currentVolume;
+    if (isMuted) volumeSlider.value = 0;
+}
+
+setTimeout(() => updateVolumeIcon(), 100);
+
 
 let audioCtx;
 let audioSource;
@@ -235,21 +246,6 @@ function updateTabStyling() {
   });
 }
 
-
-
-
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
-}
-
-
-
 searchBtn.addEventListener("click", () => {
   if (searchInput.value.trim()) {
     searchSongs(searchInput.value.trim());
@@ -266,9 +262,8 @@ async function searchSongs(query) {
   resultsGrid.innerHTML = createSkeletonLoaders(6);
 
   try {
-    let params = { s: query };
     if (currentSearchMode === "artists") {
-      params = { a: query, limit: 50 };
+
     }
 
     performSearch(searchInput.value.trim());
@@ -285,14 +280,14 @@ async function performSearch(query) {
     
     try {
         if (currentSearchMode === "artists") {
-            const data = await apiFetch("/search", { s: query });
+            const data = await apiFetch("/search/", { a: query });
             const result = await data.json();
             const artists = extractArtistData(result);
             displayArtistResults(artists);
         } else if (currentSearchMode === "albums") {
             await loadAlbums(query);
         } else {
-            const data = await apiFetch("/search", { s: query });
+            const data = await apiFetch("/search/", { s: query });
             const result = await data.json();
             const tracks = result.data?.items || result.items || [];
             displayResults(tracks);
@@ -348,7 +343,6 @@ function createAlbumCard(album) {
         <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-gray-800 shadow-lg">
             <img src="${imageUrl}" alt="${album.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
              <div class="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20"></div>
-             <!-- Play Button Overlay -->
              <button class="play-album-btn absolute bottom-2 right-2 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-current"><polygon points="5,3 19,12 5,21"></polygon></svg>
             </button>
@@ -378,17 +372,15 @@ function createAlbumCard(album) {
 function extractArtistData(apiResponse) {
   const artists = [];
 
-  if (!apiResponse || !Array.isArray(apiResponse) || apiResponse.length === 0) {
+  if (!apiResponse) {
     return artists;
   }
 
   const responseData = apiResponse.data || apiResponse;
-  console.log("Response data structure:", responseData);
+  
 
-  if (responseData.length > 0) {
-    console.log("Found artists in items array:", responseData);
-
-    responseData.forEach((artist) => {
+  if (responseData.artists && Array.isArray(responseData.artists.items)) {
+    responseData.artists.items.forEach((artist) => {
       artists.push({
         id: artist.id,
         name: artist.name,
@@ -400,34 +392,29 @@ function extractArtistData(apiResponse) {
     });
   }
 
-  if (responseData.topHits?.length > 0) {
-    console.log("Checking topHits:", responseData.topHits);
 
+  if (responseData.topHits && Array.isArray(responseData.topHits)) {
     responseData.topHits.forEach((hit) => {
-      if (hit.item) {
-        const item = hit.item;
 
-        if (
-          item.type === "artist" ||
-          item.artistTypes ||
-          (item.name && !item.title && !item.album)
-        ) {
-          console.log("Found artist in topHits:", item);
+      if (hit.value && (hit.type === "ARTISTS" || hit.type === "artist")) {
+        const item = hit.value;
 
-          artists.push({
-            id: item.id,
-            name: item.name,
-            url: item.url || `https://tidal.com/artist/${item.id}`,
-            picture: item.picture,
-            artistTypes: item.artistTypes || ["ARTIST"],
-            bio: item.bio || { text: null, source: null },
-          });
+        if (!artists.some(a => a.id === item.id)) {
+            artists.push({
+                id: item.id,
+                name: item.name,
+                url: item.url || `https://tidal.com/artist/${item.id}`,
+                picture: item.picture,
+                artistTypes: item.artistTypes || ["ARTIST"],
+                bio: item.bio || { text: null, source: null },
+            });
         }
       }
     });
   }
 
-  if (artists.length === 0 && responseData.tracks?.items?.length > 0) {
+
+  if (artists.length === 0 && responseData.tracks && Array.isArray(responseData.tracks.items)) {
     console.log("No direct artists found, extracting from tracks...");
     const artistMap = new Map();
 
@@ -450,7 +437,6 @@ function extractArtistData(apiResponse) {
 
     const extractedArtists = Array.from(artistMap.values());
     artists.push(...extractedArtists);
-    console.log("Extracted artists from tracks:", extractedArtists);
   }
 
   return artists;
@@ -458,6 +444,7 @@ function extractArtistData(apiResponse) {
 
 function displayArtistResults(artists) {
   currentList = artists;
+  resultsGrid.className = "grid grid-cols-1 sm:grid-cols-2 gap-4";
   resultsGrid.innerHTML = "";
 
   if (!artists.length) {
@@ -518,6 +505,8 @@ function viewArtistProfile(artist) {
 
 function displayResults(songs) {
   currentList = songs;
+  currentList = songs;
+  resultsGrid.className = "flex flex-col gap-1";
   resultsGrid.innerHTML = "";
 
   if (!songs.length) {
@@ -891,7 +880,7 @@ async function playSongFromQueue(index, forcePlay = false) {
     if (amLyricsWrapper) {
         amLyricsWrapper.innerHTML = '';
         amLyricsElement = document.createElement('am-lyrics');
-        amLyricsElement.className = "w-full h-full text-base";
+        amLyricsElement.className = "w-full h-full text-xs md:text-base";
 
         amLyricsElement.setAttribute('song-title', song.title);
         amLyricsElement.setAttribute('song-artist', song.artist.name);
@@ -1084,6 +1073,16 @@ audio.addEventListener("ended", () => {
 
 function updateEffectiveVolume() {
     const baseVolume = parseFloat(volumeSlider.value);
+    
+
+    if (baseVolume > 0 && isMuted) {
+        isMuted = false;
+        localStorage.setItem("tidal_muted", "false");
+    }
+    
+    localStorage.setItem("tidal_volume", baseVolume);
+    updateVolumeIcon();
+
     let finalVol = baseVolume;
 
     if (currentReplayGain !== null && typeof currentReplayGain === 'number') {
@@ -1100,9 +1099,84 @@ function updateEffectiveVolume() {
     }
 }
 
+function updateVolumeIcon() {
+    if (!muteBtn) return;
+    const icon = muteBtn.querySelector("i") || muteBtn.querySelector("svg");
+    if (!icon) return;
+
+    const vol = parseFloat(volumeSlider.value);
+    
+    let iconName = "volume-2";
+    if (isMuted || vol === 0) {
+        iconName = "volume-x";
+    } else if (vol < 0.5) {
+        iconName = "volume-1";
+    }
+    
+
+    if (icon.getAttribute("data-lucide") !== iconName) {
+        icon.setAttribute("data-lucide", iconName);
+        lucide.createIcons();
+    }
+}
+
+async function toggleMute() {
+    if (isMuted) {
+
+        isMuted = false;
+        localStorage.setItem("tidal_muted", "false");
+        
+        let restoreVol = previousVolume;
+        if (restoreVol === 0) restoreVol = 0.7;
+        volumeSlider.value = restoreVol;
+        updateVolumeIcon();
+
+
+        let targetVol = restoreVol;
+        if (currentReplayGain !== null && typeof currentReplayGain === 'number') {
+            const gainFactor = Math.pow(10, currentReplayGain / 20);
+            targetVol = restoreVol * gainFactor;
+        }
+        targetVol = Math.max(0, Math.min(1, targetVol));
+
+        if (gainNode) {
+            await fadeVolume(targetVol, 200);
+        } else {
+            audio.volume = targetVol;
+        }
+
+    } else {
+
+        isMuted = true;
+        localStorage.setItem("tidal_muted", "true");
+        
+        const current = parseFloat(volumeSlider.value);
+        if (current > 0) {
+            previousVolume = current;
+            localStorage.setItem("tidal_prev_volume", previousVolume);
+        }
+        volumeSlider.value = 0;
+        updateVolumeIcon();
+
+        if (gainNode) {
+            await fadeVolume(0, 200);
+        } else {
+            audio.volume = 0;
+        }
+    }
+
+    localStorage.setItem("tidal_volume", volumeSlider.value);
+}
+
 volumeSlider.addEventListener("input", (e) => {
     updateEffectiveVolume();
 });
+
+muteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleMute();
+});
+
 
 function updateProgress(e) {
   if (!audio.duration) return;
@@ -1148,6 +1222,7 @@ document.addEventListener("mouseup", async () => {
 
 function displayFavorites() {
   currentList = favorites;
+  resultsGrid.className = "flex flex-col gap-1";
   resultsGrid.innerHTML = "";
 
   const header = document.createElement("div");
@@ -1257,7 +1332,7 @@ function createPlaylistCard(playlist, index) {
         <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-gray-800 shadow-lg">
             <img src="${imageUrl}" alt="${playlist.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
             
-             <!-- Quick Play Button Overlay (appears on hover) -->
+
             <button class="play-playlist-btn absolute bottom-2 right-2 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-current"><polygon points="5,3 19,12 5,21"></polygon></svg>
             </button>
