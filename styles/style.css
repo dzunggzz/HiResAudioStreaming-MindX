@@ -747,15 +747,14 @@ body {
 
 @media (max-width: 640px) {
   .modal-overlay {
-    padding: 0;
+    padding: 0.5rem;
   }
   
   .modal-panel {
-    border-radius: 0;
-    border: none;
-    width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
+    border-radius: 1rem;
+    width: 100%;
+    height: auto;
+    max-height: calc(100vh - 1rem);
   }
   
   .modal-header {
