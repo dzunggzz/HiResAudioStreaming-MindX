@@ -150,8 +150,6 @@ let audioSource;
 let gainNode;
 let weq8;
 
-let liricle;
-let currentLyricsLines = [];
 let isDragging = false;
 let dragProgress = 0;
 let wasPlaying = false;
@@ -1987,16 +1985,6 @@ async function deletePlaylist(index) {
   }
 }
 
-function showPlaylistDetails(playlist) {
-  const trackList = playlist.tracks
-    .map(
-      (track, index) => `${index + 1}. ${track.title} - ${track.artist.name}`
-    )
-    .join("\n");
-
-  alert(`Playlist: ${playlist.title}\n\nTracks:\n${trackList}`);
-}
-
 window.showCreatePlaylistModal = showCreatePlaylistModal;
 
 function showCreatePlaylistModal() {
@@ -2274,55 +2262,3 @@ audio.addEventListener('play', () => {
 audio.addEventListener('pause', () => {
     stopLyricsSync();
 });
-
-async function deleteTrackFromPlaylist(playlistIndex, trackIndex) {
-    if (
-        !currentUser ||
-        playlistIndex < 0 ||
-        playlistIndex >= userPlaylists.length
-    )
-        return;
-
-    const playlist = userPlaylists[playlistIndex];
-    if (!playlist || !playlist.tracks) return;
-    
-    const trackToRemove = playlist.tracks[trackIndex];
-
-    const updatedTracks = [...playlist.tracks];
-    updatedTracks.splice(trackIndex, 1);
-
-    const updatedPlaylist = {
-        ...playlist,
-        tracks: updatedTracks,
-        numberOfTracks: updatedTracks.length,
-        duration: Math.max(0, (playlist.duration || 0) - (trackToRemove.duration || 0)),
-        lastUpdated: new Date().toISOString(),
-    };
-
-    try {
-        const docRef = doc(window.db, "playlists", currentUser.uid);
-        
-        await updateDoc(docRef, {
-            playlists: arrayRemove(playlist),
-        });
-
-        await updateDoc(docRef, {
-            playlists: arrayUnion(updatedPlaylist),
-        });
-
-        userPlaylists[playlistIndex] = updatedPlaylist;
-
-        if (typeof currentPlaylistIndex !== 'undefined' && currentPlaylistIndex === playlistIndex) {
-            showPlaylistPage(updatedPlaylist, playlistIndex);
-        }
-
-        if (typeof currentSearchMode !== 'undefined' && currentSearchMode === "myPlaylists") {
-            displayMyPlaylists();
-        }
-
-        console.log(`Removed "${trackToRemove.title}" from "${playlist.title}"`);
-    } catch (error) {
-        console.error("Error removing track from playlist:", error);
-        alert("Failed to remove track due to an error.");
-    }
-}
