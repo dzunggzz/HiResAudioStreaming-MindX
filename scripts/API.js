@@ -89,6 +89,8 @@ const equalizerModal = document.getElementById("equalizerModal");
 const closeEqualizerModal = document.getElementById("closeEqualizerModal");
 const repeatBtn = document.getElementById("repeatBtn");
 
+const artistTopTracksInfo = document.getElementById("artistTopTracksInfo");
+
 let currentList = [];
 let queue = [];
 let currentSong = 0;
@@ -388,7 +390,6 @@ function extractArtistData(apiResponse) {
         url: artist.url || `https://tidal.com/artist/${artist.id}`,
         picture: artist.picture,
         artistTypes: artist.artistTypes || ["ARTIST"],
-        bio: artist.bio || { text: null, source: null },
       });
     });
   }
@@ -406,8 +407,7 @@ function extractArtistData(apiResponse) {
                 name: item.name,
                 url: item.url || `https://tidal.com/artist/${item.id}`,
                 picture: item.picture,
-                artistTypes: item.artistTypes || ["ARTIST"],
-                bio: item.bio || { text: null, source: null },
+                artistTypes: item.artistTypes || ["ARTIST"]
             });
         }
       }
@@ -428,8 +428,7 @@ function extractArtistData(apiResponse) {
               name: artist.name,
               url: artist.url || `https://tidal.com/artist/${artist.id}`,
               picture: artist.picture,
-              artistTypes: ["ARTIST"],
-              bio: { text: null, source: null },
+              artistTypes: ["ARTIST"]
             });
           }
         });
@@ -1912,6 +1911,7 @@ async function loadArtist(id) {
 
 function renderArtistPage(artist) {
     console.log(artist)
+    artistTopTracksInfo.textContent = `Best songs from ${artist.name}.`;
     artistPageName.textContent = artist.name;
     if (artist.picture) {
         artistPageImage.src = `${IMAGE_API_BASE}${artist.picture.split("-")
@@ -1936,7 +1936,7 @@ function renderArtistPage(artist) {
     } else {
         artist.topTracks.forEach((track, index) => {
              if (!track.artist) track.artist = { id: artist.id, name: artist.name };
-             const card = createTrackCard(track, index, artist.topTracks);
+             const card = createTrackCard(track, index, artist.topTracks, { showIndex: true, trackNumber: index + 1 });
              artistTopTracksGrid.appendChild(card);
         });
     }
@@ -2184,50 +2184,6 @@ async function toggleFavorite(track) {
     }
   } catch (error) {
     console.error("Error updating favorites:", error);
-  }
-}
-
-async function fetchLyrics(trackId) {
-  try {
-    const trackInfoResponse = await fetch(
-      `${TRACK_INFO_API_BASE}/?id=${trackId}`
-    );
-    const trackInfo = await trackInfoResponse.json();
-
-    const title = trackInfo.data.title;
-    const artist = trackInfo.data.artist.name;
-    const album = trackInfo.data.album.title;
-    const duration = trackInfo.data.duration;
-
-    const lyricsUrl = `https://lyricsplus.prjktla.workers.dev/v2/lyrics/get?title=${encodeURIComponent(
-      title
-    )}&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(
-      album
-    )}&duration=${duration}&source=apple,lyricsplus,musixmatch,spotify,musixmatch-word`;
-    const lyricsResponse = await fetch(lyricsUrl);
-    const lyricsData = await lyricsResponse.json();
-
-    if (lyricsData.error) {
-      console.error("Lyrics not found:", lyricsData.error.message);
-      return null;
-    }
-
-    if (lyricsData.lyrics && Array.isArray(lyricsData.lyrics)) {
-      const lrcLines = lyricsData.lyrics.map((line) => {
-        const minutes = Math.floor(line.time / 60000);
-        const seconds = Math.floor((line.time % 60000) / 1000);
-        const centiseconds = Math.floor((line.time % 1000) / 10);
-        const timestamp = `[${minutes.toString().padStart(2, "0")}:${seconds
-          .toString()
-          .padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}]`;
-        return `${timestamp}${line.text}`;
-      });
-      return lrcLines.join("\n");
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching lyrics:", error);
-    return null;
   }
 }
 
