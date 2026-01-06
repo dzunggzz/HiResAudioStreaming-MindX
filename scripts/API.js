@@ -545,59 +545,119 @@ function createTrackCard(song, index, list = currentList, options = {}) {
         ${trackNumberHtml}
         <img src="${imageUrl}" alt="${song.title}" class="h-[64px] w-[64px] rounded object-cover">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
-            <a class="artist-link break-words text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+            <h3 class="truncate font-semibold ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
+            <a class="artist-link truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
               song.artist.name
             }</a>
-            <p class="text-xs text-gray-500">
-                <a class="album-link hover:text-blue-400 hover:underline cursor-pointer transition-colors">${song.album.title}</a>
-                 • CD • 16-bit/44.1 kHz FLAC
-            </p>
+            <div class="flex items-center text-xs text-gray-500">
+                <a class="album-link truncate hover:text-blue-400 hover:underline cursor-pointer transition-colors">${song.album.title}</a>
+                <span class="flex-shrink-0 sm:hidden"> • CD LOSSLESS</span>
+                <span class="flex-shrink-0 hidden sm:inline"> • CD • 16-bit/44.1 kHz FLAC</span>
+            </div>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
-            <button class="favorite-btn rounded-full p-2 transition-colors ${
-              isFav ? "text-red-400" : "text-gray-400"
-            } hover:text-red-400" title="${
-    isFav ? "remove from favorites" : "add to favorites"
-  }" aria-label="${isFav ? "Remove from favorites" : "Add to favorites"}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="${
-                  isFav ? "currentColor" : "none"
-                }" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-            </button>
-            <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue" aria-label="Add to queue">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-            </button>
-            <div class="relative">
-                <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist" aria-label="Add to playlist">
+            <!-- Mobile Dropdown -->
+            <div class="relative sm:hidden">
+                <button class="mobile-actions-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Actions">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="8" y1="6" x2="21" y2="6"></line>
-                        <line x1="8" y1="12" x2="21" y2="12"></line>
-                        <line x1="8" y1="18" x2="21" y2="18"></line>
-                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        <path d="m3 16 2 2 2-2"/>
+                        <path d="m3 8 2-2 2 2"/>
+                        <path d="M11 12h10"/>
+                        <path d="M11 18h10"/>
+                        <path d="M11 6h10"/>
                     </svg>
                 </button>
-                <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
-                    <div class="p-2">
-                        <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
-                        <div class="max-h-32 overflow-y-auto">
-                            ${userPlaylists
-                              .map(
-                                (playlist, index) => `
-                                <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${index}">
+                <div class="mobile-actions-dropdown hidden absolute top-full right-0 mt-1 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20">
+                    <button class="mobile-favorite-btn flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-t-lg ${isFav ? 'text-red-400' : 'text-gray-300'}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        ${isFav ? 'Remove from Favorites' : 'Add to Favorites'}
+                    </button>
+                    <button class="mobile-queue-btn flex items-center gap-2 w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add to Queue
+                    </button>
+                    <div class="relative">
+                         <button class="mobile-playlist-trigger flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 rounded-b-lg">
+                            <span class="flex items-center gap-2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                                Add to Playlist
+                            </span>
+                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <div class="mobile-playlist-submenu hidden bg-gray-900 border-t border-gray-700">
+                            ${userPlaylists.map((playlist, index) => `
+                                <button class="w-full text-left px-8 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white" onclick="addToPlaylist(${index}, '${song.id}')">
                                     ${playlist.title}
                                 </button>
-                            `
-                              )
-                              .join("")}
-                            <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" id="createNewPlaylistFromDropdown">
+                            `).join('')}
+                            <button class="w-full text-left px-8 py-2 text-sm text-blue-400 hover:bg-gray-800" onclick="showCreatePlaylistModal()">
                                 + Create new playlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Buttons -->
+            <div class="hidden sm:flex items-center gap-2">
+                <button class="favorite-btn rounded-full p-2 transition-colors ${
+                  isFav ? "text-red-400" : "text-gray-400"
+                } hover:text-red-400" title="${
+        isFav ? "remove from favorites" : "add to favorites"
+      }" aria-label="${isFav ? "Remove from favorites" : "Add to favorites"}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="${
+                      isFav ? "currentColor" : "none"
+                    }" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+                <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue" aria-label="Add to queue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="relative">
+                    <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist" aria-label="Add to playlist">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                        <div class="p-2">
+                            <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
+                            <div class="max-h-32 overflow-y-auto">
+                                ${userPlaylists
+                                  .map(
+                                    (playlist, index) => `
+                                    <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${index}">
+                                        ${playlist.title}
+                                    </button>
+                                `
+                                  )
+                                  .join("")}
+                                <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" id="createNewPlaylistFromDropdown">
+                                    + Create new playlist
+
                             </button>
                         </div>
                     </div>
@@ -606,6 +666,53 @@ function createTrackCard(song, index, list = currentList, options = {}) {
             <span>${formatTime(song.duration || 0)}</span>
         </div>
     `;
+
+    const mobileActionsBtn = card.querySelector('.mobile-actions-btn');
+    const mobileDropdown = card.querySelector('.mobile-actions-dropdown');
+    
+    if (mobileActionsBtn && mobileDropdown) {
+        mobileActionsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.mobile-actions-dropdown:not(.hidden)').forEach(d => {
+                if (d !== mobileDropdown) d.classList.add('hidden');
+            });
+            mobileDropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!mobileActionsBtn.contains(e.target) && !mobileDropdown.contains(e.target)) {
+                mobileDropdown.classList.add('hidden');
+            }
+        });
+
+        const mobFavBtn = card.querySelector('.mobile-favorite-btn');
+        if (mobFavBtn) {
+            mobFavBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await toggleFavorite(song);
+                mobileDropdown.classList.add('hidden');
+                if (list === currentList) displayResults(currentList);
+            });
+        }
+
+        const mobQueueBtn = card.querySelector('.mobile-queue-btn');
+        if (mobQueueBtn) {
+            mobQueueBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addToQueue(song);
+                mobileDropdown.classList.add('hidden');
+                alert("Added to queue"); 
+            });
+        }
+        const mobPlaylistTrigger = card.querySelector('.mobile-playlist-trigger');
+        const mobPlaylistSubmenu = card.querySelector('.mobile-playlist-submenu');
+        if (mobPlaylistTrigger && mobPlaylistSubmenu) {
+            mobPlaylistTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobPlaylistSubmenu.classList.toggle('hidden');
+            });
+        }
+    }
 
   card.querySelector(".artist-link").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -1447,7 +1554,7 @@ async function showAlbumPage(album) {
     document.getElementById("albumPageYear").textContent = album.releaseDate ? album.releaseDate.split("-")[0] : "";
     document.getElementById("albumPageCount").textContent = "Loading...";
     document.getElementById("albumPageDuration").textContent = "...";
-    document.getElementById("albumTracksGrid").innerHTML = '<p class="text-gray-500 text-center py-8">Loading tracks...</p>';
+    document.getElementById("albumTracksGrid").innerHTML = createSkeletonLoaders(1);
 
     let imageUrl = "https://placehold.co/320x320?text=No+Cover";
     if (album.cover) {
@@ -1678,6 +1785,7 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
 
         const imageUrl = `${IMAGE_API_BASE}${track.album.cover.split("-").join("/")}/320x320.jpg`;
         const isCurrentlyPlaying = track.id === currentPlayingTrackId;
+        const isFav = isFavorite(track);
 
         if (editMode) {
             card.innerHTML = `
@@ -1712,15 +1820,237 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                 <img src="${imageUrl}" alt="${track.title}" class="h-12 w-12 rounded object-cover">
                 <div class="min-w-0 flex-1">
                     <h3 class="truncate font-medium ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
-                    <p class="truncate text-sm text-gray-400">${track.artist.name}</p>
+                    <a class="artist-link cursor-pointer truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+                      track.artist.name
+                    }</a>
+                    <div class="flex items-center text-xs text-gray-500">
+                        <a class="album-link truncate hover:text-blue-400 hover:underline cursor-pointer transition-colors">${track.album.title}</a>
+                        <span class="flex-shrink-0 sm:hidden"> • CD LOSSLESS</span>
+                        <span class="flex-shrink-0 hidden sm:inline"> • CD • 16-bit/44.1 kHz FLAC</span>
+                    </div>
                 </div>
-                <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
+                
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <!-- Mobile Dropdown -->
+                    <div class="relative sm:hidden">
+                        <button class="mobile-actions-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Actions">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m3 16 2 2 2-2"/>
+                                <path d="m3 8 2-2 2 2"/>
+                                <path d="M11 12h10"/>
+                                <path d="M11 18h10"/>
+                                <path d="M11 6h10"/>
+                            </svg>
+                        </button>
+                        <div class="mobile-actions-dropdown hidden absolute top-full right-0 mt-1 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20">
+                            <button class="mobile-favorite-btn flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-t-lg ${isFav ? 'text-red-400' : 'text-gray-300'}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                </svg>
+                                ${isFav ? 'Remove from Favorites' : 'Add to Favorites'}
+                            </button>
+                            <button class="mobile-queue-btn flex items-center gap-2 w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add to Queue
+                            </button>
+                            <div class="relative">
+                                <button class="mobile-playlist-trigger flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 rounded-b-lg">
+                                    <span class="flex items-center gap-2">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                        </svg>
+                                        Add to Playlist
+                                    </span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m6 9 6 6 6-6"/>
+                                    </svg>
+                                </button>
+                                <div class="mobile-playlist-submenu hidden bg-gray-900 border-t border-gray-700">
+                                    ${userPlaylists.map((pl, idx) => `
+                                        <button class="w-full text-left px-8 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white" onclick="addToPlaylist(${idx}, '${track.id}')">
+                                            ${pl.title}
+                                        </button>
+                                    `).join('')}
+                                    <button class="w-full text-left px-8 py-2 text-sm text-blue-400 hover:bg-gray-800" onclick="showCreatePlaylistModal()">
+                                        + Create new playlist
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Controls -->
+                    <div class="hidden sm:flex items-center gap-2">
+                        <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400" title="${isFav ? 'remove from favorites' : 'add to favorites'}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </button>
+                        <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <div class="relative">
+                            <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </button>
+                             <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                                <div class="p-2">
+                                    <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
+                                    <div class="max-h-32 overflow-y-auto">
+                                        ${userPlaylists.map((pl, idx) => `
+                                            <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${idx}">
+                                                ${pl.title}
+                                            </button>
+                                        `).join("")}
+                                        <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" onclick="showCreatePlaylistModal()">
+                                            + Create new playlist
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
+                </div>
             `;
             
             card.addEventListener("click", (e) => {
                 e.stopPropagation();
                 playSong(trackIndex, playlist.tracks);
             });
+
+            const mobileActionsBtn = card.querySelector('.mobile-actions-btn');
+            const mobileDropdown = card.querySelector('.mobile-actions-dropdown');
+            
+            if (mobileActionsBtn && mobileDropdown) {
+                mobileActionsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.mobile-actions-dropdown:not(.hidden)').forEach(d => {
+                         if (d !== mobileDropdown) d.classList.add('hidden');
+                    });
+                    mobileDropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                     if (!mobileActionsBtn.contains(e.target) && !mobileDropdown.contains(e.target)) {
+                        mobileDropdown.classList.add('hidden');
+                    }
+                });
+
+                const mobFavBtn = card.querySelector('.mobile-favorite-btn');
+                if (mobFavBtn) {
+                    mobFavBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        await toggleFavorite(track);
+                        mobileDropdown.classList.add('hidden');
+                        renderPlaylistTracks(userPlaylists[playlistIndex], playlistIndex, false);
+                    });
+                }
+
+                 const mobQueueBtn = card.querySelector('.mobile-queue-btn');
+                if (mobQueueBtn) {
+                    mobQueueBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        addToQueue(track);
+                        mobileDropdown.classList.add('hidden');
+                        alert("Added to queue");
+                    });
+                }
+                
+                const mobPlaylistTrigger = card.querySelector('.mobile-playlist-trigger');
+                 const mobPlaylistSubmenu = card.querySelector('.mobile-playlist-submenu');
+                if (mobPlaylistTrigger && mobPlaylistSubmenu) {
+                    mobPlaylistTrigger.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        mobPlaylistSubmenu.classList.toggle('hidden');
+                    });
+                }
+            }
+
+             const favBtn = card.querySelector(".favorite-btn");
+             if (favBtn) {
+                 favBtn.addEventListener("click", async (e) => {
+                     e.stopPropagation();
+                     await toggleFavorite(track);
+                     renderPlaylistTracks(userPlaylists[playlistIndex], playlistIndex, false);
+                 });
+             }
+
+            const queueBtn = card.querySelector(".add-to-queue-btn");
+            if (queueBtn) {
+                queueBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    addToQueue(track);
+                    const icon = queueBtn.querySelector("svg");
+                    icon.style.stroke = "#60a5fa";
+                    setTimeout(() => icon.style.stroke = "currentColor", 500);
+                });
+            }
+
+            const playlistBtn = card.querySelector(".add-to-playlist-btn");
+            const dropdown = card.querySelector(".playlist-dropdown");
+             if (playlistBtn && dropdown) {
+                playlistBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll(".playlist-dropdown").forEach(d => {
+                        if (d !== dropdown) d.classList.add("hidden");
+                    });
+                    dropdown.classList.toggle("hidden");
+                });
+
+                dropdown.querySelectorAll("button[data-playlist-index]").forEach(btn => {
+                    btn.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        const targetPlaylistIndex = parseInt(btn.dataset.playlistIndex);
+                        await addToPlaylist(targetPlaylistIndex, track.id);
+                        dropdown.classList.add("hidden");
+                    });
+                });
+
+                 document.addEventListener("click", (e) => {
+                    if (!playlistBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add("hidden");
+                    }
+                });
+            }
+
+            const artistLink = card.querySelector(".artist-link");
+            if (artistLink) {
+                artistLink.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (track.artist && track.artist.id) {
+                        showArtistPage(track.artist.id);
+                    }
+                });
+            }
+
+            const albumLink = card.querySelector(".album-link");
+            if (albumLink) {
+                albumLink.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (track.album && track.album.id) {
+                        showAlbumPage(track.album); 
+                    }
+                });
+            }
         }
         
         trackContainer.appendChild(card);
@@ -1833,8 +2163,8 @@ async function showArtistPage(artistId) {
     artistPageName.textContent = "Loading...";
     artistPageImage.src = "https://placehold.co/320x320?text=Loading";
     artistPageRoles.innerHTML = "";
-    artistTopTracksGrid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12">Loading tracks...</div>';
-    artistDiscographyGrid.innerHTML = '<div class="col-span-full text-center text-gray-400 py-12">Loading albums...</div>';
+    artistTopTracksGrid.innerHTML = createSkeletonLoaders(1);
+    artistDiscographyGrid.innerHTML = createSkeletonLoaders(1);
 
     try {
         const artistData = await loadArtist(artistId);
@@ -2196,19 +2526,14 @@ function fadeVolume(targetVolume, duration = 300) {
 }
 
 function createSkeletonLoaders(count) {
-  let html = "";
-  for (let i = 0; i < count; i++) {
-    html += `
-            <div class="skeleton-card">
-                <div class="skeleton skeleton-image"></div>
-                <div class="skeleton-text">
-                    <div class="skeleton skeleton-line long"></div>
-                    <div class="skeleton skeleton-line short"></div>
-                </div>
-            </div>
-        `;
-  }
-  return html;
+  return `
+    <div class="col-span-full flex justify-center items-center py-20">
+        <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+    </div>
+  `;
 }
 
 
