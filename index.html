@@ -239,13 +239,13 @@
                         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
                             <div>
                                 <h2 class="text-2xl font-semibold text-white">Top Tracks</h2>
-                                <p class="text-sm text-gray-400">Best songs from this artist.</p>
+                                <p class="text-sm text-gray-400" id="artistTopTracksInfo">Best songs from this artist.</p>
                             </div>
                         </div>
 
 
                         <div class="rounded-2xl border border-gray-800 bg-gray-900/40 p-4">
-                            <div id="artistTopTracksGrid" class="grid gap-4 grid-cols-1 md:grid-cols-2">
+                            <div id="artistTopTracksGrid" class="flex flex-col gap-1">
 
                             </div>
                         </div>
@@ -606,17 +606,26 @@
 
         <audio id="audio" crossorigin="anonymous"></audio>
         
-        <div id="amLyricsContainer" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-             <div class="relative w-full max-w-4xl h-[80vh] bg-gray-900/90 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl flex flex-col">
-                <div class="flex items-center justify-between p-4 border-b border-gray-700/50 z-10 bg-gray-900/50 backdrop-blur-sm">
-                    <h3 class="text-lg font-semibold text-white flex gap-2 items-center">
-                        <i data-lucide="music-2" class="w-5 h-5 text-blue-400"></i> Lyrics
-                    </h3>
-                    <button id="closeAmLyrics" class="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800">
-                        <i data-lucide="x" class="w-6 h-6"></i>
-                    </button>
+        <div id="amLyricsContainer" class="lyrics-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+             <div class="lyrics-panel relative w-full max-w-4xl h-[80vh] flex flex-col">
+                <div class="lyrics-header flex items-center justify-between p-5 z-10">
+                    <div class="lyrics-heading">
+                        <h3 class="lyrics-title text-xl font-semibold text-white flex gap-2 items-center">
+                            <i data-lucide="music-2" class="w-5 h-5 text-blue-400"></i> Lyrics
+                        </h3>
+                        <p id="lyricsTrackInfo" class="lyrics-subtitle text-sm text-blue-200/80 mt-1"></p>
+                    </div>
+                    <div class="lyrics-header-actions flex items-center gap-2">
+                        <button id="closeAmLyrics" class="lyrics-icon-button" title="Close lyrics">
+                            <i data-lucide="x" class="w-[18px] h-[18px]"></i>
+                        </button>
+                    </div>
                 </div>
-                <div id="amLyricsWrapper" class="w-full h-full text-lg"></div>
+                <div class="lyrics-body flex-1 p-4 pt-0 overflow-hidden">
+                    <div class="lyrics-component-wrapper h-full rounded-xl overflow-hidden">
+                        <div id="amLyricsWrapper" class="w-full h-full text-lg overflow-y-auto"></div>
+                    </div>
+                </div>
              </div>
         </div>
 
