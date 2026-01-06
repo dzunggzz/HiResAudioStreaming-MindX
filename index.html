@@ -6,7 +6,6 @@
         <title>tidal clone lol</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/liricle"></script>
         <script type="module" src="https://cdn.jsdelivr.net/npm/@uimaxbai/am-lyrics@0.6.4/dist/src/am-lyrics.min.js"></script>
         <link rel="stylesheet" href="./styles/style.css" />
         <link
@@ -629,12 +628,14 @@
              </div>
         </div>
 
-        <div id="queueModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75 flex items-center justify-center">
-            <div class="bg-gray-800 rounded-lg shadow-2xl max-w-3xl w-full mx-4 max-h-[80vh] overflow-hidden">
-                <div class="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h3 class="text-lg font-semibold text-white">Playback Queue</h3>
-                    <button id="closeQueueModal" class="text-gray-400 hover:text-white">
-                        <i data-lucide="x" style="width: 24px; height: 24px"></i>
+        <div id="queueModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+            <div class="modal-panel max-w-3xl w-full max-h-[80vh] flex flex-col">
+                <div class="modal-header flex items-center justify-between p-5">
+                    <h3 class="modal-title text-xl font-semibold text-white flex items-center gap-2">
+                        <i data-lucide="list-music" class="w-5 h-5 text-blue-400"></i> Playback Queue
+                    </h3>
+                    <button id="closeQueueModal" class="modal-icon-button" title="Close">
+                        <i data-lucide="x" class="w-[18px] h-[18px]"></i>
                     </button>
                 </div>
                 <div class="p-4 overflow-y-auto max-h-[60vh]">
@@ -663,13 +664,16 @@
                 </div>
             </div>
         </div>
+        </div>
 
-        <div id="equalizerModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-75 flex items-center justify-center">
-            <div class="bg-gray-800 rounded-lg shadow-2xl max-w-5xl w-full mx-4 max-h-[80vh] overflow-hidden">
-                <div class="flex items-center justify-between p-4 border-b border-gray-700">
-                    <h3 class="text-lg font-semibold text-white">Equalizer</h3>
-                    <button id="closeEqualizerModal" class="text-gray-400 hover:text-white">
-                        <i data-lucide="x" style="width: 24px; height: 24px"></i>
+        <div id="equalizerModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+            <div class="modal-panel max-w-5xl w-full max-h-[80vh] flex flex-col">
+                <div class="modal-header flex items-center justify-between p-5">
+                    <h3 class="modal-title text-xl font-semibold text-white flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-5 h-5 text-blue-400"></i> Equalizer
+                    </h3>
+                    <button id="closeEqualizerModal" class="modal-icon-button" title="Close">
+                        <i data-lucide="x" class="w-[18px] h-[18px]"></i>
                     </button>
                 </div>
                 <div class="p-4">
