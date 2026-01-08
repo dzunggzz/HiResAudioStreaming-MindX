@@ -2677,6 +2677,14 @@ function fadeVolume(targetVolume, duration = 300) {
       resolve();
       return;
     }
+
+    // If the tab is in the background, skip animation to avoid throttling issues
+    if (document.hidden) {
+        gainNode.gain.value = targetVolume;
+        resolve();
+        return;
+    }
+
     const startVolume = gainNode.gain.value;
     const startTime = Date.now();
     const animate = () => {
