@@ -154,7 +154,7 @@ let isDragging = false;
 let dragProgress = 0;
 let wasPlaying = false;
 let lyricsRafId = null;
-let currentReplayGain = null;
+
 
 function toggleRepeatMode() {
   if (repeatMode === "off") {
@@ -224,6 +224,12 @@ function switchSearchMode(mode) {
     searchInput.style.display = "block";
     searchInput.placeholder = "Search for tracks...";
   }
+
+  if (!searchInput.value.trim() && (mode === 'tracks' || mode === 'artists' || mode === 'albums')) {
+      renderSearchHistory();
+  } else if (searchInput.value.trim() && (mode === 'tracks' || mode === 'artists' || mode === 'albums')) {
+      searchSongs(searchInput.value.trim());
+  }
 }
 
 function updateTabStyling() {
@@ -259,8 +265,174 @@ searchInput.addEventListener("keypress", (e) => {
   }
 });
 
+searchInput.addEventListener("focus", () => {
+    if (!searchInput.value.trim()) {
+        renderSearchHistory();
+    }
+});
+
+searchInput.addEventListener("input", () => {
+    if (!searchInput.value.trim()) {
+        renderSearchHistory();
+    }
+});
+
+function setupKeyboardShortcuts() {
+    document.addEventListener("keydown", async (e) => {
+        if (
+            e.target.tagName.toLowerCase() === "input" ||
+            e.target.tagName.toLowerCase() === "textarea"
+        ) {
+            return;
+        }
+
+        switch (e.key) {
+            case " ":
+                e.preventDefault();
+                if (isPlaying) {
+                     await fadeVolume(0, 300);
+                     audio.pause();
+                     isPlaying = false;
+                     updatePlayButton(isPlaying);
+                } else {
+                     audio.play();
+                     isPlaying = true;
+                     updatePlayButton(isPlaying);
+                     await fadeVolume(volumeSlider.value, 300);
+                }
+                break;
+
+            case "ArrowLeft":
+                if (audio.duration) {
+                    audio.currentTime = Math.max(0, audio.currentTime - 5);
+                }
+                break;
+
+            case "ArrowRight":
+                if (audio.duration) {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+                }
+                break;
+            
+            case "ArrowUp":
+                 e.preventDefault();
+                 const newVolUp = Math.min(1, parseFloat(volumeSlider.value) + 0.1);
+                 volumeSlider.value = newVolUp;
+                 updateEffectiveVolume();
+                 break;
+
+            case "ArrowDown":
+                 e.preventDefault();
+                 const newVolDown = Math.max(0, parseFloat(volumeSlider.value) - 0.1);
+                 volumeSlider.value = newVolDown;
+                 updateEffectiveVolume();
+                 break;
+
+            case "m": 
+            case "M":
+                 toggleMute();
+                 break;
+        }
+    });
+}
+setupKeyboardShortcuts();
+
+const HISTORY_KEYS = {
+    tracks: "tidal_search_history_tracks",
+    artists: "tidal_search_history_artists",
+    albums: "tidal_search_history_albums"
+};
+const MAX_HISTORY = 10;
+
+function getSearchHistory() {
+    const key = HISTORY_KEYS[currentSearchMode] || HISTORY_KEYS.tracks;
+    try {
+        const history = localStorage.getItem(key);
+        return history ? JSON.parse(history) : [];
+    } catch (e) {
+        console.error("Failed to parse search history", e);
+        return [];
+    }
+}
+
+function saveSearchHistory(query) {
+    if (!query) return;
+    if (!HISTORY_KEYS[currentSearchMode]) return;
+
+    let history = getSearchHistory();
+    history = history.filter(item => item.toLowerCase() !== query.toLowerCase());
+    history.unshift(query);
+    if (history.length > MAX_HISTORY) {
+        history = history.slice(0, MAX_HISTORY);
+    }
+    
+    const key = HISTORY_KEYS[currentSearchMode];
+    localStorage.setItem(key, JSON.stringify(history));
+}
+
+function deleteFromHistory(query, e) {
+    if (e) e.stopPropagation();
+    let history = getSearchHistory();
+    history = history.filter(item => item !== query);
+    
+    const key = HISTORY_KEYS[currentSearchMode] || HISTORY_KEYS.tracks;
+    localStorage.setItem(key, JSON.stringify(history));
+    renderSearchHistory();
+}
+
+function renderSearchHistory() {
+    if (currentSearchMode !== "tracks" && currentSearchMode !== "artists" && currentSearchMode !== "albums") return; 
+    if (searchInput.value.trim()) return;
+
+    const history = getSearchHistory();
+    if (history.length === 0) {
+        resultsGrid.innerHTML = ""; 
+        return;
+    }
+
+    resultsGrid.className = "flex flex-col gap-1";
+    resultsGrid.innerHTML = "";
+    
+    const header = document.createElement("div");
+    header.className = "px-2 pb-2 text-sm text-gray-500 font-semibold uppercase tracking-wider";
+    header.textContent = "Recent Searches";
+    resultsGrid.appendChild(header);
+
+    history.forEach(query => {
+        const item = document.createElement("div");
+        item.className = "group flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors";
+        item.innerHTML = `
+            <div class="flex items-center gap-3">
+                <svg class="text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span class="text-gray-300 group-hover:text-white transition-colors">${query}</span>
+            </div>
+            <button class="delete-history-btn p-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all" title="Remove from history">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+        
+        item.addEventListener("click", () => {
+            searchInput.value = query;
+            searchSongs(query);
+        });
+
+        item.querySelector(".delete-history-btn").addEventListener("click", (e) => {
+            deleteFromHistory(query, e);
+        });
+
+        resultsGrid.appendChild(item);
+    });
+}
+
 async function searchSongs(query) {
   resultsGrid.innerHTML = createSkeletonLoaders(6);
+  saveSearchHistory(query);
 
   try {
     if (currentSearchMode === "artists") {
@@ -986,7 +1158,7 @@ async function playSongFromQueue(index, forcePlay = false) {
       await fadeVolume(0, 300);
     }
 
-    currentReplayGain = song.replayGain || null;
+
     updateEffectiveVolume();
 
 
@@ -1243,10 +1415,7 @@ function updateEffectiveVolume() {
 
     let finalVol = baseVolume;
 
-    if (currentReplayGain !== null && typeof currentReplayGain === 'number') {
-        const gainFactor = Math.pow(10, currentReplayGain / 20);
-        finalVol = baseVolume * gainFactor;
-    }
+
 
     finalVol = Math.max(0, Math.min(1, finalVol));
 
@@ -1291,10 +1460,7 @@ async function toggleMute() {
 
 
         let targetVol = restoreVol;
-        if (currentReplayGain !== null && typeof currentReplayGain === 'number') {
-            const gainFactor = Math.pow(10, currentReplayGain / 20);
-            targetVol = restoreVol * gainFactor;
-        }
+
         targetVol = Math.max(0, Math.min(1, targetVol));
 
         if (gainNode) {
