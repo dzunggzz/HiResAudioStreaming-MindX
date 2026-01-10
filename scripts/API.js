@@ -15,7 +15,6 @@ const API_BASES = [
 ];
 
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
-const TRACK_INFO_API_BASE = "https://triton.squid.wtf/info";
 
 const searchInput = document.getElementById("searchInput");
 const resultsGrid = document.getElementById("resultsGrid");
@@ -332,6 +331,14 @@ function setupKeyboardShortcuts() {
             case "M":
                  toggleMute();
                  break;
+
+            case "/":
+                e.preventDefault();
+                const searchInput = document.getElementById("searchInput");
+                if (searchInput) {
+                    searchInput.focus();
+                }
+                break;
         }
     });
 }
@@ -502,7 +509,7 @@ function displayAlbumResults(albums) {
 
 function createAlbumCard(album) {
     const card = document.createElement("div");
-    card.className = "group relative flex flex-col text-left cursor-pointer";
+    card.className = "group relative flex flex-col text-left cursor-pointer p-3 rounded-xl transition-all duration-200 hover:bg-white/5";
 
     let imageUrl = "https://placehold.co/320x320?text=No+Cover";
     if (album.cover) {
@@ -513,19 +520,19 @@ function createAlbumCard(album) {
     const releaseYear = album.releaseDate ? album.releaseDate.split("-")[0] : "";
 
     card.innerHTML = `
-        <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-gray-800 shadow-lg">
+        <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-lg bg-gray-900 shadow-lg group-hover:shadow-2xl transition-all duration-300">
             <img src="${imageUrl}" alt="${album.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
              <div class="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20"></div>
-             <button class="play-album-btn absolute bottom-2 right-2 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
+             <button class="play-album-btn absolute bottom-3 right-3 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-current"><polygon points="5,3 19,12 5,21"></polygon></svg>
             </button>
         </div>
         
-        <h3 class="truncate text-base font-semibold text-white group-hover:text-blue-400 transition-colors">
+        <h3 class="truncate text-base font-medium text-white group-hover:text-blue-400 transition-colors">
             ${album.title}
         </h3>
-        <p class="truncate text-sm text-gray-400">${artistName}</p>
-        <p class="text-xs text-gray-500 mt-0.5">${releaseYear}</p>
+        <p class="truncate text-sm text-gray-400 mt-0.5">${artistName}</p>
+        <p class="text-xs text-gray-500 mt-0.5 opacity-60">${releaseYear}</p>
     `;
 
     card.addEventListener("click", () => {
@@ -631,7 +638,7 @@ function displayArtistResults(artists) {
 function createArtistCard(artist, index) {
   const card = document.createElement("div");
   card.className =
-    "group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors border border-transparent hover:border-blue-700 hover:bg-gray-800/70";
+    "group flex w-full items-center gap-4 rounded-xl p-3 transition-colors border border-transparent hover:border-white/5 hover:bg-white/5 cursor-pointer";
 
   const artistImageUrl = artist.picture
     ? `${IMAGE_API_BASE}${artist.picture.split("-").join("/")}/320x320.jpg`
@@ -640,20 +647,19 @@ function createArtistCard(artist, index) {
   card.innerHTML = `
         <img src="${artistImageUrl}" alt="${
     artist.name
-  }" class="h-[64px] w-[64px] rounded object-cover">
+  }" class="h-16 w-16 rounded-lg object-cover shadow-lg group-hover:shadow-2xl transition-shadow">
         <div class="min-w-0 flex-1">
-            <h3 class="break-words font-semibold text-white group-hover:text-blue-400 transition-colors">${artist.name}</h3>
+            <h3 class="break-words font-medium text-base text-white group-hover:text-blue-400 transition-colors">${artist.name}</h3>
             <p class="text-sm text-gray-400">${
               artist.artistTypes?.join(", ") || "Artist"
             }</p>
-            <p class="text-xs text-gray-500">Artist Profile</p>
+            <p class="text-xs text-gray-500 mt-0.5 opacity-60">Artist Profile</p>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
             <button class="view-artist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="view artist">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 18V5l12-2v13"></path>
-                    <circle cx="6" cy="18" r="3"></circle>
-                    <circle cx="18" cy="16" r="3"></circle>
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
             </button>
         </div>
@@ -696,7 +702,8 @@ function createTrackCard(song, index, list = currentList, options = {}) {
   const isCurrentlyPlaying = song.id === currentPlayingTrackId;
   
   const card = document.createElement("div");
-  card.className = `group flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors border ${isCurrentlyPlaying ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent hover:border-blue-700 hover:bg-gray-800/70'}`;
+  card.className =
+    "group flex w-full items-center gap-4 rounded-xl p-3 transition-colors border border-transparent hover:border-white/5 hover:bg-white/5 cursor-pointer";
   card.dataset.trackId = song.id;
 
   const imageUrl = `${IMAGE_API_BASE}${song.album.cover
@@ -705,9 +712,9 @@ function createTrackCard(song, index, list = currentList, options = {}) {
   const isFav = isFavorite(song);
 
   const trackNumberHtml = showIndex ? `
-        <div class="flex-shrink-0 w-8 text-center">
-            <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'} group-hover:hidden">${trackNumber}</span>
-            <svg class="play-icon hidden group-hover:block mx-auto text-white" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <div class="flex-shrink-0 w-8 text-center font-mono">
+            <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400 font-bold' : 'text-gray-500'} group-hover:hidden">${trackNumber}</span>
+            <svg class="play-icon hidden group-hover:block mx-auto text-white drop-shadow-md" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5,3 19,12 5,21"></polygon>
             </svg>
         </div>
@@ -715,16 +722,16 @@ function createTrackCard(song, index, list = currentList, options = {}) {
 
   card.innerHTML = `
         ${trackNumberHtml}
-        <img src="${imageUrl}" alt="${song.title}" class="h-[64px] w-[64px] rounded object-cover">
+        <img src="${imageUrl}" alt="${song.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg group-hover:shadow-2xl transition-shadow">
         <div class="min-w-0 flex-1">
-            <h3 class="truncate font-semibold ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
-            <a class="artist-link truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+            <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
+            <a class="artist-link truncate text-sm text-gray-400 hover:text-white hover:underline inline-block mt-0.5 transition-colors relative z-10">${
               song.artist.name
             }</a>
-            <div class="flex items-center text-xs text-gray-500">
-                <a class="album-link truncate hover:text-blue-400 hover:underline cursor-pointer transition-colors">${song.album.title}</a>
-                <span class="flex-shrink-0 sm:hidden"> • CD LOSSLESS</span>
-                <span class="flex-shrink-0 hidden sm:inline"> • CD • 16-bit/44.1 kHz FLAC</span>
+            <div class="flex items-center text-xs text-gray-500 mt-1 gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                <a class="album-link truncate hover:text-white hover:underline cursor-pointer transition-colors relative z-10">${song.album.title}</a>
+                <span class="flex-shrink-0 w-1 h-1 rounded-full bg-gray-600"></span>
+                <span class="flex-shrink-0 border border-gray-700 rounded px-1 text-[0.6rem] leading-none py-0.5 text-gray-400">LOSSLESS</span>
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
@@ -739,14 +746,14 @@ function createTrackCard(song, index, list = currentList, options = {}) {
                         <path d="M11 6h10"/>
                     </svg>
                 </button>
-                <div class="mobile-actions-dropdown hidden absolute top-full right-0 mt-1 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20">
-                    <button class="mobile-favorite-btn flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-t-lg ${isFav ? 'text-red-400' : 'text-gray-300'}">
+                <div class="mobile-actions-dropdown absolute right-0 top-full mt-2 w-56 transform scale-95 opacity-0 invisible origin-top-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50 max-w-[calc(100vw-2rem)]">
+                    <button class="mobile-favorite-btn flex items-center gap-2.5 w-full px-4 py-2.5 text-left rounded-t-xl hover:bg-white/10 hover:text-white transition-colors ${isFav ? 'text-red-400' : 'text-gray-300'}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
                         ${isFav ? 'Remove from Favorites' : 'Add to Favorites'}
                     </button>
-                    <button class="mobile-queue-btn flex items-center gap-2 w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700">
+                    <button class="mobile-queue-btn flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -754,8 +761,8 @@ function createTrackCard(song, index, list = currentList, options = {}) {
                         Add to Queue
                     </button>
                     <div class="relative">
-                         <button class="mobile-playlist-trigger flex items-center justify-between w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 rounded-b-lg">
-                            <span class="flex items-center gap-2">
+                         <button class="mobile-playlist-trigger flex items-center justify-between w-full px-4 py-2.5 text-left text-gray-300 hover:bg-white/10 hover:text-white transition-colors rounded-b-xl">
+                            <span class="flex items-center gap-2.5">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="8" y1="6" x2="21" y2="6"></line>
                                     <line x1="8" y1="12" x2="21" y2="12"></line>
@@ -770,14 +777,16 @@ function createTrackCard(song, index, list = currentList, options = {}) {
                                 <path d="m6 9 6 6 6-6"/>
                             </svg>
                         </button>
-                        <div class="mobile-playlist-submenu hidden bg-gray-900 border-t border-gray-700">
+                        <div class="mobile-playlist-submenu hidden bg-gray-900 border-t border-white/10">
                             ${userPlaylists.map((playlist, index) => `
-                                <button class="w-full text-left px-8 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white" onclick="addToPlaylist(${index}, '${song.id}')">
+                                <button class="w-full text-left px-8 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white flex items-center gap-2" onclick="addToPlaylist(${index}, '${song.id}')">
+                                    <i data-lucide="music-2" class="w-4 h-4"></i>
                                     ${playlist.title}
                                 </button>
                             `).join('')}
-                            <button class="w-full text-left px-8 py-2 text-sm text-blue-400 hover:bg-gray-800" onclick="showCreatePlaylistModal()">
-                                + Create new playlist
+                            <button class="w-full text-left px-8 py-2 text-sm text-blue-400 hover:bg-gray-800 flex items-center gap-2" onclick="showCreatePlaylistModal()">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Create new playlist
                             </button>
                         </div>
                     </div>
@@ -814,26 +823,27 @@ function createTrackCard(song, index, list = currentList, options = {}) {
                             <line x1="3" y1="18" x2="3.01" y2="18"></line>
                         </svg>
                     </button>
-                    <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                    <div class="playlist-dropdown absolute right-0 bottom-full mb-2 w-56 transform scale-95 opacity-0 invisible origin-bottom-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50">
                         <div class="p-2">
-                            <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
-                            <div class="max-h-32 overflow-y-auto">
+                            <div class="text-xs text-gray-500 font-medium px-2 py-1.5 uppercase tracking-wider">Add to playlist</div>
+                            <div class="max-h-48 overflow-y-auto custom-scrollbar">
                                 ${userPlaylists
                                   .map(
                                     (playlist, index) => `
-                                    <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${index}">
-                                        ${playlist.title}
+                                    <button class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors flex items-center gap-2" data-playlist-index="${index}">
+                                        <i data-lucide="music-2" class="w-3 h-3"></i>
+                                        <span class="truncate">${playlist.title}</span>
                                     </button>
                                 `
                                   )
                                   .join("")}
-                                <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" id="createNewPlaylistFromDropdown">
-                                    + Create new playlist
-
-                            </button>
+                                <button class="w-full text-left px-2 py-1.5 text-sm text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors mt-1 flex items-center gap-2" id="createNewPlaylistFromDropdown">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                    Create new playlist
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
             </div>
             <span>${formatTime(song.duration || 0)}</span>
         </div>
@@ -845,15 +855,28 @@ function createTrackCard(song, index, list = currentList, options = {}) {
     if (mobileActionsBtn && mobileDropdown) {
         mobileActionsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            document.querySelectorAll('.mobile-actions-dropdown:not(.hidden)').forEach(d => {
-                if (d !== mobileDropdown) d.classList.add('hidden');
+            const isHidden = mobileDropdown.classList.contains('invisible');
+
+            document.querySelectorAll('.mobile-actions-dropdown').forEach(d => {
+                if (d !== mobileDropdown) {
+                    d.classList.add('invisible', 'opacity-0', 'scale-95');
+                    d.classList.remove('opacity-100', 'scale-100');
+                }
             });
-            mobileDropdown.classList.toggle('hidden');
+
+            if (isHidden) {
+                mobileDropdown.classList.remove('invisible', 'opacity-0', 'scale-95');
+                mobileDropdown.classList.add('opacity-100', 'scale-100');
+            } else {
+                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                mobileDropdown.classList.remove('opacity-100', 'scale-100');
+            }
         });
 
         document.addEventListener('click', (e) => {
             if (!mobileActionsBtn.contains(e.target) && !mobileDropdown.contains(e.target)) {
-                mobileDropdown.classList.add('hidden');
+                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                mobileDropdown.classList.remove('opacity-100', 'scale-100');
             }
         });
 
@@ -862,7 +885,8 @@ function createTrackCard(song, index, list = currentList, options = {}) {
             mobFavBtn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 await toggleFavorite(song);
-                mobileDropdown.classList.add('hidden');
+                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                mobileDropdown.classList.remove('opacity-100', 'scale-100');
                 if (list === currentList) displayResults(currentList);
             });
         }
@@ -872,7 +896,8 @@ function createTrackCard(song, index, list = currentList, options = {}) {
             mobQueueBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 addToQueue(song);
-                mobileDropdown.classList.add('hidden');
+                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                mobileDropdown.classList.remove('opacity-100', 'scale-100');
                 alert("Added to queue"); 
             });
         }
@@ -933,27 +958,52 @@ function createTrackCard(song, index, list = currentList, options = {}) {
   const addToPlaylistBtn = card.querySelector(".add-to-playlist-btn");
   const dropdown = card.querySelector(".playlist-dropdown");
 
-  addToPlaylistBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle("hidden");
-  });
+  if (addToPlaylistBtn && dropdown) {
+      addToPlaylistBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isHidden = dropdown.classList.contains("invisible");
+        
+        document.querySelectorAll(".playlist-dropdown").forEach(d => {
+            if (d !== dropdown) {
+                d.classList.add("invisible", "opacity-0", "scale-95");
+                d.classList.remove("opacity-100", "scale-100");
+            }
+        });
+        
+        if (isHidden) {
+            dropdown.classList.remove("invisible", "opacity-0", "scale-95");
+            dropdown.classList.add("opacity-100", "scale-100");
+        } else {
+            dropdown.classList.add("invisible", "opacity-0", "scale-95");
+            dropdown.classList.remove("opacity-100", "scale-100");
+        }
+      });
 
-  dropdown.addEventListener("click", async (e) => {
-    if (e.target.matches("[data-playlist-index]")) {
-      e.stopPropagation();
-      const playlistIndex = parseInt(e.target.dataset.playlistIndex);
-      await addTrackToPlaylist(playlistIndex, song);
-      dropdown.classList.add("hidden");
-    } else if (e.target.id === "createNewPlaylistFromDropdown") {
-      e.stopPropagation();
-      dropdown.classList.add("hidden");
-      showCreatePlaylistModal();
-    }
-  });
+      dropdown.addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        
+        if (btn.dataset.playlistIndex) {
+          e.stopPropagation();
+          const playlistIndex = parseInt(btn.dataset.playlistIndex);
+           await addTrackToPlaylist(playlistIndex, song);
+           dropdown.classList.add("invisible", "opacity-0", "scale-95");
+           dropdown.classList.remove("opacity-100", "scale-100");
+        } else if (btn.id === "createNewPlaylistFromDropdown") {
+          e.stopPropagation();
+          dropdown.classList.add("invisible", "opacity-0", "scale-95");
+          dropdown.classList.remove("opacity-100", "scale-100");
+          showCreatePlaylistModal();
+        }
+      });
 
-  document.addEventListener("click", () => {
-    dropdown.classList.add("hidden");
-  });
+      document.addEventListener("click", (e) => {
+        if (!addToPlaylistBtn.contains(e.target) && !dropdown.contains(e.target)) {
+             dropdown.classList.add("invisible", "opacity-0", "scale-95");
+             dropdown.classList.remove("opacity-100", "scale-100");
+        }
+      });
+  }
 
   card.addEventListener("click", () => playSong(index, list));
 
@@ -1060,21 +1110,21 @@ function createQueueItem(song, index) {
   const isCurrentSong = index === currentSong;
 
   li.innerHTML = `
-        <div class="group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors ${
+        <div class="group flex w-full cursor-pointer items-center gap-4 rounded-xl p-3 text-left transition-colors ${
           isCurrentSong
-            ? "bg-blue-500/10 text-white"
-            : "text-gray-200 hover:bg-gray-800/70"
+            ? "bg-blue-900/20 text-white border border-blue-500/30"
+            : "text-white border border-transparent hover:bg-white/5 hover:border-white/5"
         }">
-            <span class="w-6 text-xs font-semibold text-gray-500 group-hover:text-gray-300">${
+            <span class="w-6 text-xs font-mono font-medium text-gray-500 group-hover:text-white text-center">${
               index + 1
             }</span>
             <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">${song.title}</p>
-                <a class="truncate text-xs text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+                <p class="truncate text-sm font-medium ${isCurrentSong ? 'text-blue-400' : 'text-white'}">${song.title}</p>
+                <a class="truncate text-xs text-gray-400 hover:text-white hover:underline inline-block mt-0.5">${
                   song.artist.name
                 }</a>
             </div>
-            <button class="rounded-full p-1 text-gray-500 transition-colors hover:text-red-400" title="remove">
+            <button class="rounded-full p-2 text-gray-500 transition-colors hover:text-red-400 hover:bg-white/10" title="remove">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1153,21 +1203,28 @@ async function playSongFromQueue(index, forcePlay = false) {
   currentPlayingTrackId = song.id;
   updateTrackHighlighting();
 
+  
   try {
-    if (isPlaying) {
-      await fadeVolume(0, 300);
-    }
+    const fadeDuration = userSettings.crossfadeEnabled ? userSettings.crossfadeDuration : 300;
 
-
-    updateEffectiveVolume();
-
-
+    const fadeOutPromise = isPlaying ? fadeVolume(0, fadeDuration) : Promise.resolve();
+    
     const quality = "LOSSLESS";
-    const streamResponse = await apiFetch("/track/", {
+    const fetchPromise = apiFetch("/track/", {
       id: song.id,
       quality: quality,
+    })
+    .then(res => res.json())
+    .catch(err => {
+        console.error("Fetch failed", err);
+        return null;
     });
-    const streamData = await streamResponse.json();
+
+    const [_, streamData] = await Promise.all([fadeOutPromise, fetchPromise]);
+    
+    if (!streamData) throw new Error("Failed to fetch stream data");
+
+    updateEffectiveVolume();
     console.log(streamData.data.manifest);
     let audioManifest = streamData.data.manifest;
     let binaryString = atob(audioManifest);
@@ -1179,6 +1236,29 @@ async function playSongFromQueue(index, forcePlay = false) {
     const audioObject = JSON.parse(utf8String);
 
     audio.src = audioObject.urls[0];
+    
+    let statsText = quality;
+    if (userSettings.statsEnabled) {
+        const codec = audioObject.codec || "flac";
+        const flow = audioObject.audioQuality || "lossless";
+        statsText = `${quality} • ${codec} • ${flow}`;
+        
+        currentTrackStats = {
+            id: song.id,
+            format: `${codec.toUpperCase()} / ${flow.toUpperCase()}`,
+            replayGain: song.replayGain ? `${song.replayGain} dB` : '-',
+            peak: song.peak ? song.peak.toFixed(4) : '-',
+            isrc: song.isrc || '-',
+            bpmKey: `${song.bpm || '-'} / ${song.key || '-'}`
+        };
+        
+        if (userSettings.statsEnabled) {
+             renderStaticStats();
+             updateDynamicStats();
+        }
+    }
+    document.getElementById("qualityLabel").textContent = statsText;
+
     const albumCoverUrl = `${IMAGE_API_BASE}${song.album.cover
       .split("-")
       .join("/")}/320x320.jpg`;
@@ -1207,7 +1287,7 @@ async function playSongFromQueue(index, forcePlay = false) {
             });
         }
     };
-    document.getElementById("qualityLabel").textContent = quality;
+
 
     if (amLyricsWrapper) {
         amLyricsWrapper.innerHTML = '';
@@ -1243,7 +1323,10 @@ async function playSongFromQueue(index, forcePlay = false) {
              }
         });
 
-        amLyricsWrapper.appendChild(amLyricsElement);
+        if (amLyricsWrapper && amLyricsElement) {
+             amLyricsWrapper.innerHTML = '';
+             amLyricsWrapper.appendChild(amLyricsElement);
+        }
     }
 
     if (!audioCtx) {
@@ -1253,7 +1336,7 @@ async function playSongFromQueue(index, forcePlay = false) {
     audio.play();
     isPlaying = true;
     updatePlayButton(isPlaying);
-    await fadeVolume(volumeSlider.value, 300);
+    await fadeVolume(volumeSlider.value, fadeDuration);
   } catch (error) {
     console.error("Playback error:", error);
   }
@@ -1306,9 +1389,13 @@ function updatePlayButton(playing) {
   if (playing) {
     playIcon.style.display = "none";
     pauseIcon.style.display = "flex";
+    
+
   } else {
     playIcon.style.display = "flex";
     pauseIcon.style.display = "none";
+    
+
   }
 }
 
@@ -1373,6 +1460,7 @@ audio.addEventListener("timeupdate", () => {
     }
     durationEl.textContent = formatTime(audio.duration);
   }
+    updateDynamicStats();
 });
 
 audio.addEventListener("progress", () => {
@@ -1642,7 +1730,7 @@ function displayMyPlaylists() {
 function createPlaylistCard(playlist, index) {
   const card = document.createElement("div");
   card.className =
-    "group relative flex flex-col text-left cursor-pointer";
+    "group relative flex flex-col text-left cursor-pointer p-3 rounded-xl transition-all duration-200 hover:bg-white/5";
   let imageUrl = "https://placehold.co/320x320/1f2937/ffffff?text=Playlist";
   if (playlist.image) {
       imageUrl = `${IMAGE_API_BASE}${playlist.image.split("-").join("/")}/320x320.jpg`;
@@ -1653,17 +1741,16 @@ function createPlaylistCard(playlist, index) {
   }
 
   card.innerHTML = `
-        <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-gray-800 shadow-lg">
+        <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-lg bg-gray-900 shadow-lg group-hover:shadow-2xl transition-all duration-300">
             <img src="${imageUrl}" alt="${playlist.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
             
-
-            <button class="play-playlist-btn absolute bottom-2 right-2 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
+            <button class="play-playlist-btn absolute bottom-3 right-3 flex h-10 w-10 translate-y-4 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-lg shadow-black/40 transition-all duration-300 hover:scale-105 hover:bg-blue-400 group-hover:translate-y-0 group-hover:opacity-100">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-current"><polygon points="5,3 19,12 5,21"></polygon></svg>
             </button>
         </div>
         
-        <h3 class="truncate text-base font-semibold text-white group-hover:text-blue-400 transition-colors">${playlist.title}</h3>
-        <p class="truncate text-sm text-gray-400">${playlist.tracks.length} tracks</p>
+        <h3 class="truncate text-base font-medium text-white group-hover:text-blue-400 transition-colors">${playlist.title}</h3>
+        <p class="truncate text-sm text-gray-400 mt-0.5">${playlist.tracks.length} tracks</p>
     `;
 
   card.addEventListener("click", () => {
@@ -1680,16 +1767,16 @@ function createPlaylistCard(playlist, index) {
 
 function createNewPlaylistCard() {
     const card = document.createElement("div");
-    card.className = "group flex flex-col text-left cursor-pointer";
+    card.className = "group flex flex-col text-left cursor-pointer p-3 rounded-xl transition-all duration-200 hover:bg-white/5";
     
     card.innerHTML = `
-        <div class="relative mb-3 aspect-square w-full flex items-center justify-center overflow-hidden rounded-md border-2 border-dashed border-gray-700 bg-gray-800/30 transition-colors group-hover:border-blue-500/50 group-hover:bg-gray-800/50">
+        <div class="relative mb-3 aspect-square w-full flex items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-700 bg-gray-800/30 transition-colors group-hover:border-blue-500/50 group-hover:bg-gray-800/50 group-hover:shadow-lg">
             <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-blue-400 transition-colors group-hover:bg-blue-500 group-hover:text-white">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </div>
         </div>
-        <h3 class="truncate text-base font-semibold text-gray-300 group-hover:text-white transition-colors">Create New</h3>
-        <p class="truncate text-sm text-gray-500">Add a playback list</p>
+        <h3 class="truncate text-base font-medium text-gray-300 group-hover:text-white transition-colors">Create New</h3>
+        <p class="truncate text-sm text-gray-500 mt-0.5">Add a playback list</p>
     `;
 
     card.addEventListener("click", () => {
@@ -1899,13 +1986,13 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
 
     if (editMode) {
         const toolbar = document.createElement('div');
-        toolbar.className = 'flex items-center justify-between mb-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700';
+        toolbar.className = 'flex items-center justify-between mb-6 p-4 bg-gray-900/80 backdrop-blur-md rounded-xl border border-white/10 shadow-xl sticky top-0 z-30 ring-1 ring-white/5';
         toolbar.innerHTML = `
             <div class="flex items-center gap-3">
-                <input type="checkbox" id="selectAllTracks" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500">
-                <label for="selectAllTracks" class="text-sm text-gray-400">Select all</label>
+                <input type="checkbox" id="selectAllTracks" class="w-5 h-5 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900 transition-colors">
+                <label for="selectAllTracks" class="text-sm font-medium text-gray-300 hover:text-white cursor-pointer select-none">Select all</label>
             </div>
-            <button id="deleteSelectedTracks" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <button id="deleteSelectedTracks" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-500/10" disabled>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3,6 5,6 21,6"></polyline>
                     <path d="M19,6v14a2,2,0,0,1,-2,2H7a2,2,0,0,1,-2,-2V6m3,0V4a2,2,0,0,1,2,-2h4a2,2,0,0,1,2,2v2"></path>
@@ -1945,7 +2032,7 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
 
     playlist.tracks.forEach((track, trackIndex) => {
         const card = document.createElement('div');
-        card.className = `group flex w-full items-center gap-3 rounded-lg p-3 transition-colors border ${track.id === currentPlayingTrackId ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent hover:border-blue-700 hover:bg-gray-800/70'}`;
+        card.className = `group flex w-full items-center gap-4 rounded-xl p-3 transition-all border cursor-pointer ${track.id === currentPlayingTrackId ? 'border-blue-500/50 bg-blue-900/20' : 'border-transparent hover:border-white/5 hover:bg-white/5'}`;
         card.dataset.trackId = track.id;
         card.dataset.trackIndex = trackIndex;
 
@@ -1955,44 +2042,46 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
 
         if (editMode) {
             card.innerHTML = `
-                <input type="checkbox" class="track-checkbox w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500" data-track-index="${trackIndex}">
-                <div class="drag-handle cursor-grab p-1 text-gray-500 hover:text-white">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <input type="checkbox" class="track-checkbox w-5 h-5 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900 ml-2" data-track-index="${trackIndex}">
+                <div class="drag-handle cursor-grab p-2 text-gray-500 hover:text-white transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="16" y2="6"></line>
                         <line x1="8" y1="12" x2="16" y2="12"></line>
                         <line x1="8" y1="18" x2="16" y2="18"></line>
                     </svg>
                 </div>
-                <div class="flex-shrink-0 w-6 text-center">
-                    <span class="text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'}">${trackIndex + 1}</span>
+                <div class="flex-shrink-0 w-8 text-center font-mono">
+                    <span class="text-sm ${isCurrentlyPlaying ? 'text-blue-400 font-bold' : 'text-gray-500'}">${trackIndex + 1}</span>
                 </div>
-                <img src="${imageUrl}" alt="${track.title}" class="h-12 w-12 rounded object-cover">
+                <img src="${imageUrl}" alt="${track.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg">
                 <div class="min-w-0 flex-1">
-                    <h3 class="truncate font-medium ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white'}">${track.title}</h3>
-                    <p class="truncate text-sm text-gray-400">${track.artist.name}</p>
+                    <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white'}">${track.title}</h3>
+                    <p class="truncate text-sm text-gray-400 mt-0.5">${track.artist.name}</p>
                 </div>
-                <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
+                <span class="text-sm text-gray-500 font-mono tracking-tighter">${formatTime(track.duration || 0)}</span>
             `;
             
             card.querySelector('.track-checkbox').addEventListener('change', updateDeleteButtonState);
+            card.querySelector('.track-checkbox').onclick = (e) => e.stopPropagation();
+            card.querySelector('.drag-handle').onclick = (e) => e.stopPropagation();
         } else {
             card.innerHTML = `
-                <div class="flex-shrink-0 w-8 text-center">
-                    <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400' : 'text-gray-400'} group-hover:hidden">${trackIndex + 1}</span>
-                    <svg class="play-icon hidden group-hover:block mx-auto text-white" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <div class="flex-shrink-0 w-10 text-center font-mono">
+                    <span class="track-number text-sm ${isCurrentlyPlaying ? 'text-blue-400 font-bold' : 'text-gray-500'} group-hover:hidden">${trackIndex + 1}</span>
+                    <svg class="play-icon hidden group-hover:block mx-auto text-white drop-shadow-md" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="5,3 19,12 5,21"></polygon>
                     </svg>
                 </div>
-                <img src="${imageUrl}" alt="${track.title}" class="h-12 w-12 rounded object-cover">
+                <img src="${imageUrl}" alt="${track.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg group-hover:shadow-2xl transition-shadow">
                 <div class="min-w-0 flex-1">
-                    <h3 class="truncate font-medium ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
-                    <a class="artist-link cursor-pointer truncate text-sm text-gray-400 hover:text-blue-400 hover:underline inline-block">${
+                    <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
+                    <a class="artist-link cursor-pointer truncate text-sm text-gray-400 hover:text-white hover:underline inline-block mt-0.5 transition-colors relative z-10">${
                       track.artist.name
                     }</a>
-                    <div class="flex items-center text-xs text-gray-500">
-                        <a class="album-link truncate hover:text-blue-400 hover:underline cursor-pointer transition-colors">${track.album.title}</a>
-                        <span class="flex-shrink-0 sm:hidden"> • CD LOSSLESS</span>
-                        <span class="flex-shrink-0 hidden sm:inline"> • CD • 16-bit/44.1 kHz FLAC</span>
+                    <div class="flex items-center text-xs text-gray-500 mt-1 gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <a class="album-link truncate hover:text-white hover:underline cursor-pointer transition-colors relative z-10">${track.album.title}</a>
+                        <span class="flex-shrink-0 w-1 h-1 rounded-full bg-gray-600"></span>
+                        <span class="flex-shrink-0 border border-gray-700 rounded px-1 text-[0.6rem] leading-none py-0.5 text-gray-400">LOSSLESS</span>
                     </div>
                 </div>
                 
@@ -2008,7 +2097,7 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                                 <path d="M11 6h10"/>
                             </svg>
                         </button>
-                        <div class="mobile-actions-dropdown hidden absolute top-full right-0 mt-1 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-20">
+                        <div class="mobile-actions-dropdown absolute right-0 top-full mt-2 w-56 transform scale-95 opacity-0 invisible origin-top-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50 max-w-[calc(100vw-2rem)]">
                             <button class="mobile-favorite-btn flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-700 rounded-t-lg ${isFav ? 'text-red-400' : 'text-gray-300'}">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -2077,17 +2166,19 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                                     <line x1="3" y1="18" x2="3.01" y2="18"></line>
                                 </svg>
                             </button>
-                             <div class="playlist-dropdown hidden absolute bottom-full right-0 mb-2 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-lg z-10">
+                             <div class="playlist-dropdown absolute bottom-full right-0 mb-2 w-56 transform scale-95 opacity-0 invisible origin-bottom-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50">
                                 <div class="p-2">
-                                    <div class="text-xs text-gray-400 px-2 py-1">Add to playlist</div>
-                                    <div class="max-h-32 overflow-y-auto">
+                                    <div class="text-xs text-gray-500 font-medium px-2 py-1.5 uppercase tracking-wider">Add to playlist</div>
+                                    <div class="max-h-48 overflow-y-auto custom-scrollbar">
                                         ${userPlaylists.map((pl, idx) => `
-                                            <button class="w-full text-left px-2 py-1 text-sm text-gray-300 hover:bg-gray-700 rounded" data-playlist-index="${idx}">
-                                                ${pl.title}
+                                            <button class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors flex items-center gap-2" data-playlist-index="${idx}">
+                                                <i data-lucide="music-2" class="w-3 h-3"></i>
+                                                <span class="truncate">${pl.title}</span>
                                             </button>
                                         `).join("")}
-                                        <button class="w-full text-left px-2 py-1 text-sm text-blue-400 hover:bg-gray-700 rounded" onclick="showCreatePlaylistModal()">
-                                            + Create new playlist
+                                        <button class="w-full text-left px-2 py-1.5 text-sm text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors mt-1 flex items-center gap-2" onclick="showCreatePlaylistModal()">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                            Create new playlist
                                         </button>
                                     </div>
                                 </div>
@@ -2109,15 +2200,28 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
             if (mobileActionsBtn && mobileDropdown) {
                 mobileActionsBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    document.querySelectorAll('.mobile-actions-dropdown:not(.hidden)').forEach(d => {
-                         if (d !== mobileDropdown) d.classList.add('hidden');
+                    const isHidden = mobileDropdown.classList.contains('invisible');
+
+                    document.querySelectorAll('.mobile-actions-dropdown').forEach(d => {
+                         if (d !== mobileDropdown) {
+                             d.classList.add('invisible', 'opacity-0', 'scale-95');
+                             d.classList.remove('opacity-100', 'scale-100');
+                         }
                     });
-                    mobileDropdown.classList.toggle('hidden');
+                    
+                    if (isHidden) {
+                        mobileDropdown.classList.remove('invisible', 'opacity-0', 'scale-95');
+                        mobileDropdown.classList.add('opacity-100', 'scale-100');
+                    } else {
+                        mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                        mobileDropdown.classList.remove('opacity-100', 'scale-100');
+                    }
                 });
 
                 document.addEventListener('click', (e) => {
                      if (!mobileActionsBtn.contains(e.target) && !mobileDropdown.contains(e.target)) {
-                        mobileDropdown.classList.add('hidden');
+                        mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                        mobileDropdown.classList.remove('opacity-100', 'scale-100');
                     }
                 });
 
@@ -2126,7 +2230,8 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                     mobFavBtn.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         await toggleFavorite(track);
-                        mobileDropdown.classList.add('hidden');
+                        mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                        mobileDropdown.classList.remove('opacity-100', 'scale-100');
                         renderPlaylistTracks(userPlaylists[playlistIndex], playlistIndex, false);
                     });
                 }
@@ -2136,7 +2241,8 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                     mobQueueBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         addToQueue(track);
-                        mobileDropdown.classList.add('hidden');
+                        mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
+                        mobileDropdown.classList.remove('opacity-100', 'scale-100');
                         alert("Added to queue");
                     });
                 }
@@ -2176,24 +2282,39 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
              if (playlistBtn && dropdown) {
                 playlistBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
+                    const isHidden = dropdown.classList.contains("invisible");
+
                     document.querySelectorAll(".playlist-dropdown").forEach(d => {
-                        if (d !== dropdown) d.classList.add("hidden");
+                        if (d !== dropdown) {
+                            d.classList.add("invisible", "opacity-0", "scale-95");
+                            d.classList.remove("opacity-100", "scale-100");
+                        }
                     });
-                    dropdown.classList.toggle("hidden");
+
+                    if (isHidden) {
+                        dropdown.classList.remove("invisible", "opacity-0", "scale-95");
+                        dropdown.classList.add("opacity-100", "scale-100");
+                    } else {
+                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
+                        dropdown.classList.remove("opacity-100", "scale-100");
+                    }
                 });
 
                 dropdown.querySelectorAll("button[data-playlist-index]").forEach(btn => {
                     btn.addEventListener("click", async (e) => {
-                        e.stopPropagation();
-                        const targetPlaylistIndex = parseInt(btn.dataset.playlistIndex);
-                        await addToPlaylist(targetPlaylistIndex, track.id);
-                        dropdown.classList.add("hidden");
+                         e.stopPropagation();
+                        
+                        const idx = parseInt(btn.dataset.playlistIndex);
+                        await addTrackToPlaylist(idx, track.id); 
+                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
+                        dropdown.classList.remove("opacity-100", "scale-100");
                     });
                 });
 
                  document.addEventListener("click", (e) => {
                     if (!playlistBtn.contains(e.target) && !dropdown.contains(e.target)) {
-                        dropdown.classList.add("hidden");
+                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
+                        dropdown.classList.remove("opacity-100", "scale-100");
                     }
                 });
             }
@@ -2485,34 +2606,34 @@ window.showCreatePlaylistModal = showCreatePlaylistModal;
 
 function showCreatePlaylistModal() {
   const modalHTML = `
-    <div id="createPlaylistModal" class="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center">
-      <div class="bg-gray-800 rounded-lg shadow-2xl max-w-md w-full mx-4">
-        <div class="flex items-center justify-between p-4 border-b border-gray-700">
-          <h3 class="text-lg font-semibold text-white">Create New Playlist</h3>
-          <button id="closeCreateModal" class="text-gray-400 hover:text-white">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+    <div id="createPlaylistModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-gray-900 border border-white/10 rounded-2xl shadow-2xl max-w-md w-full ring-1 ring-white/5 transform transition-all scale-100 opacity-100">
+        <div class="flex items-center justify-between p-5 border-b border-white/10">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="list-plus" class="w-5 h-5 text-blue-400"></i>
+            Create New Playlist
+          </h3>
+          <button id="closeCreateModal" class="p-2 -mr-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
-        <div class="p-4">
-          <form id="createPlaylistForm">
-            <div class="mb-4">
-              <label for="playlistTitle" class="block text-sm font-medium text-gray-300 mb-2">Playlist Name</label>
+        <div class="p-6">
+          <form id="createPlaylistForm" class="space-y-5">
+            <div>
+              <label for="playlistTitle" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Playlist Name</label>
               <input type="text" id="playlistTitle" name="title" required 
-                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     placeholder="Enter playlist name">
+                     class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all font-medium"
+                     placeholder="My Awesome Playlist">
             </div>
-            <div class="mb-6">
-              <label for="playlistDescription" class="block text-sm font-medium text-gray-300 mb-2">Description (optional)</label>
+            <div>
+              <label for="playlistDescription" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Description (optional)</label>
               <textarea id="playlistDescription" name="description" rows="3"
-                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter playlist description"></textarea>
+                        class="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
+                        placeholder="What's the vibe?"></textarea>
             </div>
-            <div class="flex justify-end gap-3">
-              <button type="button" id="cancelCreateBtn" class="px-4 py-2 text-gray-300 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors">Cancel</button>
-              <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">Create Playlist</button>
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" id="cancelCreateBtn" class="px-5 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors">Cancel</button>
+              <button type="submit" class="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl shadow-lg shadow-blue-500/20 transition-all transform active:scale-95">Create Playlist</button>
             </div>
           </form>
         </div>
@@ -2678,7 +2799,6 @@ function fadeVolume(targetVolume, duration = 300) {
       return;
     }
 
-    // If the tab is in the background, skip animation to avoid throttling issues
     if (document.hidden) {
         gainNode.gain.value = targetVolume;
         resolve();
@@ -2753,11 +2873,396 @@ amLyricsContainer.addEventListener("click", (e) => {
 });
 
 audio.addEventListener('play', () => {
-    if (!amLyricsContainer.classList.contains('hidden')) {
+    if (!amLyricsContainer.classList.contains('hidden') || isNpModalOpen) {
         startLyricsSync();
     }
 });
 
-audio.addEventListener('pause', () => {
-    stopLyricsSync();
-});
+
+const isNpModalOpen = false;
+
+
+function showAddToPlaylistModal(song) {
+    const modalId = 'tempPlaylistModal';
+    const existingModal = document.getElementById(modalId);
+    if (existingModal) existingModal.remove();
+
+    const playlists = userPlaylists; 
+    
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = "fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4";
+    modal.innerHTML = `
+        <div class="bg-gray-900 rounded-2xl border border-gray-700 w-full max-w-sm overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 class="text-white font-semibold">Add to Playlist</h3>
+                <button id="closeTempModal" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="max-h-[60vh] overflow-y-auto p-2 space-y-1">
+                ${playlists.length === 0 ? '<div class="p-4 text-center text-gray-500 text-sm">No playlists found</div>' : ''}
+                ${playlists.map((pl, idx) => `
+                    <button class="w-full text-left p-3 rounded-lg hover:bg-white/10 flex items-center gap-3 group transition-colors" data-idx="${idx}">
+                        <div class="w-10 h-10 rounded bg-gray-800 flex items-center justify-center text-gray-500 group-hover:text-white">
+                            <i data-lucide="music-2" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-gray-200 font-medium truncate group-hover:text-white">${pl.title}</div>
+                            <div class="text-xs text-gray-500">${pl.tracks ? pl.tracks.length : 0} tracks</div>
+                        </div>
+                    </button>
+                `).join('')}
+                
+                <button id="createNewPlBtn" class="w-full text-left p-3 rounded-lg hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 flex items-center gap-3 transition-colors mt-2">
+                    <div class="w-10 h-10 rounded border border-dashed border-blue-500/50 flex items-center justify-center">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </div>
+                    <span class="font-medium">Create New Playlist</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    lucide.createIcons();
+
+    const closeBtn = modal.querySelector('#closeTempModal');
+    closeBtn.onclick = () => modal.remove();
+    modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+
+    modal.querySelectorAll('button[data-idx]').forEach(btn => {
+        btn.onclick = async () => {
+            const idx = parseInt(btn.dataset.idx);
+            
+            
+            try {
+               const playlist = userPlaylists[idx];
+               if (!playlist.tracks) playlist.tracks = [];
+               
+               if (playlist.tracks.some(t => t.id === song.id)) {
+                   alert("Song already in playlist!");
+                   modal.remove();
+                   return;
+               }
+               
+               playlist.tracks.push(song);
+               
+               if (currentUser && playlist.id) {
+                   const plRef = doc(window.db, "playlists", playlist.id);
+                   await updateDoc(plRef, {
+                       tracks: arrayUnion(song)
+                   });
+                   alert(`Added to ${playlist.title}`);
+               } else {
+                   console.log("Local update only (no user/id)", playlist);
+                   alert(`Added to ${playlist.title} (Local)`);
+               }
+            } catch (err) {
+                console.error("Error adding to playlist:", err);
+                alert("Failed to add to playlist");
+            }
+            modal.remove();
+        };
+    });
+
+    modal.querySelector('#createNewPlBtn').onclick = () => {
+        modal.remove();
+        if (typeof showCreatePlaylistModal === 'function') {
+            showCreatePlaylistModal();
+        } else {
+            const title = prompt("Enter playlist name:");
+            if (title && currentUser) {
+                 alert("Please implement full Create Playlist logic."); 
+            }
+        }
+    };
+}
+
+
+
+
+const settingsModal = document.getElementById('settingsModal');
+const settingsPanel = document.getElementById('settingsPanel');
+const openSettingsBtn = document.getElementById('openSettingsBtn');
+const settingsQualityBtn = document.getElementById('settingsQualityBtn');
+const settingsCrossfadeToggle = document.getElementById('settingsCrossfadeToggle');
+const settingsCrossfadeSlider = document.getElementById('settingsCrossfadeSlider');
+const settingsCrossfadeInput = document.getElementById('settingsCrossfadeInput');
+const settingsEqualizerBtn = document.getElementById('settingsEqualizerBtn');
+const settingsStatsToggle = document.getElementById('settingsStatsToggle');
+const settingsKeyboardBtn = document.getElementById('settingsKeyboardBtn');
+const keyboardShortcutsModal = document.getElementById('keyboardShortcutsModal');
+const closeKeyboardModal = document.getElementById('closeKeyboardModal');
+const settingsLogoutBtn = document.getElementById('settingsLogoutBtn');
+const settingsPcUsername = document.getElementById('settingsPcUsername');
+const settingsPcEmail = document.getElementById('settingsPcEmail');
+
+let userSettings = {
+    quality: 'High',
+    crossfadeEnabled: false,
+    crossfadeDuration: 0,
+    statsEnabled: false,
+    equalizerPreset: 'Flat'
+};
+
+function loadSettings() {
+    const saved = localStorage.getItem('userSettings');
+    if (saved) {
+        userSettings = { ...userSettings, ...JSON.parse(saved) };
+    }
+    applySettingsUI();
+}
+
+function saveSettings() {
+    localStorage.setItem('userSettings', JSON.stringify(userSettings));
+    if (typeof fadeDuration !== 'undefined') {
+        window.fadeDuration = userSettings.crossfadeEnabled ? userSettings.crossfadeDuration : 0;
+    }
+}
+
+function applySettingsUI() {
+    const qualityLabel = document.getElementById('settingsQualityLabel');
+    if (qualityLabel) {
+        qualityLabel.textContent = userSettings.quality;
+        if (userSettings.quality === 'High') qualityLabel.className = "text-xs font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded border border-white/5";
+        if (userSettings.quality === 'Lossless') qualityLabel.className = "text-xs font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20";
+        if (userSettings.quality === 'Hi-Res') qualityLabel.className = "text-xs font-mono text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20";
+    }
+
+    if (settingsCrossfadeToggle) settingsCrossfadeToggle.checked = userSettings.crossfadeEnabled;
+    if (settingsCrossfadeSlider) settingsCrossfadeSlider.value = userSettings.crossfadeDuration;
+    if (settingsCrossfadeInput) settingsCrossfadeInput.value = userSettings.crossfadeDuration;
+    if (settingsStatsToggle) settingsStatsToggle.checked = userSettings.statsEnabled;
+    
+    updateCrossfadeState();
+}
+
+function updateCrossfadeState() {
+    if (!settingsCrossfadeToggle) return;
+    const isEnabled = settingsCrossfadeToggle.checked;
+    settingsCrossfadeSlider.disabled = !isEnabled;
+    settingsCrossfadeInput.disabled = !isEnabled;
+    
+    settingsCrossfadeSlider.style.opacity = isEnabled ? '1' : '0.5';
+    settingsCrossfadeInput.style.opacity = isEnabled ? '1' : '0.5';
+    settingsCrossfadeSlider.style.pointerEvents = isEnabled ? 'auto' : 'none';
+}
+
+
+
+if (openSettingsBtn) {
+    openSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            settingsPanel.classList.remove('scale-95', 'opacity-0');
+            settingsPanel.classList.add('scale-100', 'opacity-100');
+        });
+        
+        if (currentUser) {
+            settingsPcUsername.textContent = currentUser.displayName || "User";
+            settingsPcEmail.textContent = currentUser.email || "Free Account";
+        }
+    });
+}
+
+function closeSettings() {
+    settingsPanel.classList.remove('scale-100', 'opacity-100');
+    settingsPanel.classList.add('scale-95', 'opacity-0');
+    
+    setTimeout(() => {
+        settingsModal.classList.add('hidden');
+    }, 300);
+}
+
+if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            closeSettings();
+        }
+    });
+}
+
+if (settingsCrossfadeToggle) {
+    settingsCrossfadeToggle.addEventListener('change', (e) => {
+        userSettings.crossfadeEnabled = e.target.checked;
+        updateCrossfadeState();
+        saveSettings();
+    });
+}
+
+if (settingsCrossfadeSlider) {
+    settingsCrossfadeSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        settingsCrossfadeInput.value = val;
+        userSettings.crossfadeDuration = val;
+        saveSettings();
+    });
+}
+
+if (settingsCrossfadeInput) {
+    settingsCrossfadeInput.addEventListener('change', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val)) val = 0;
+        if (val < 0) val = 0;
+        if (val > 12000) val = 12000;
+        
+        settingsCrossfadeInput.value = val;
+        settingsCrossfadeSlider.value = val;
+        userSettings.crossfadeDuration = val;
+        saveSettings();
+    });
+}
+
+if (settingsQualityBtn) {
+    settingsQualityBtn.addEventListener('click', () => {
+        const qualities = ['High', 'Lossless', 'Hi-Res'];
+        const currentIdx = qualities.indexOf(userSettings.quality);
+        const nextIdx = (currentIdx + 1) % qualities.length;
+        userSettings.quality = qualities[nextIdx];
+        saveSettings();
+        applySettingsUI();
+    });
+}
+
+if (settingsEqualizerBtn) {
+    settingsEqualizerBtn.addEventListener('click', () => {
+        closeSettings();
+        setTimeout(() => {
+            const eqBtn = document.getElementById('equalizerBtn');
+            if (eqBtn) eqBtn.click();
+        }, 300);
+    });
+}
+
+const statsOverlay = document.getElementById('statsOverlay');
+const statsCloseBtn = document.getElementById('statsCloseBtn');
+const statTrackId = document.getElementById('statTrackId');
+const statFormat = document.getElementById('statFormat');
+const statGain = document.getElementById('statGain');
+const statPeak = document.getElementById('statPeak');
+const statConnection = document.getElementById('statConnection');
+const statBandwidth = document.getElementById('statBandwidth');
+const statBuffer = document.getElementById('statBuffer');
+const statIsrc = document.getElementById('statIsrc');
+const statBpmKey = document.getElementById('statBpmKey');
+
+if (statsCloseBtn) {
+    statsCloseBtn.addEventListener('click', () => {
+        userSettings.statsEnabled = false;
+        if (settingsStatsToggle) settingsStatsToggle.checked = false;
+        saveSettings();
+        if (statsOverlay) statsOverlay.classList.add('hidden');
+    });
+}
+
+function updateDynamicStats() {
+    if (!userSettings.statsEnabled || !statsOverlay) return;
+    
+    if (audio.buffered.length > 0) {
+        for (let i = 0; i < audio.buffered.length; i++) {
+            if (audio.buffered.start(i) <= audio.currentTime && audio.buffered.end(i) >= audio.currentTime) {
+                const bufferHealth = audio.buffered.end(i) - audio.currentTime;
+                 if (statBuffer) statBuffer.textContent = `${bufferHealth.toFixed(2)} s`;
+                break;
+            }
+        }
+    }
+    
+    if (navigator.connection) {
+        const conn = navigator.connection;
+        if (statConnection) statConnection.textContent = conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Unknown';
+        if (statBandwidth) statBandwidth.textContent = conn.downlink ? `~${conn.downlink} Mbps` : '-';
+    }
+}
+
+
+if (settingsStatsToggle) {
+    settingsStatsToggle.addEventListener('change', (e) => {
+        userSettings.statsEnabled = e.target.checked;
+        saveSettings();
+        updateStatsVisibility();
+    });
+}
+
+loadSettings();
+
+let currentTrackStats = null;
+
+function renderStaticStats() {
+    if (!currentTrackStats || !statsOverlay) return;
+    
+    if (statTrackId) statTrackId.textContent = currentTrackStats.id || '-';
+    if (statFormat) statFormat.textContent = currentTrackStats.format || '-';
+    if (statGain) statGain.textContent = currentTrackStats.replayGain || '-';
+    if (statPeak) statPeak.textContent = currentTrackStats.peak || '-';
+    if (statIsrc) statIsrc.textContent = currentTrackStats.isrc || '-';
+    if (statBpmKey) statBpmKey.textContent = currentTrackStats.bpmKey || '-';
+}
+
+function updateStatsVisibility() {
+    if (!statsOverlay) {
+        return;
+    }
+    
+    if (window.innerWidth < 768) {
+         statsOverlay.classList.add('hidden');
+         return; 
+    }
+
+    if (userSettings.statsEnabled) {
+         statsOverlay.classList.remove('hidden');
+         renderStaticStats();
+         updateDynamicStats(); 
+    } else {
+         statsOverlay.classList.add('hidden');
+    }
+}
+
+updateStatsVisibility();
+
+window.addEventListener('resize', updateStatsVisibility);
+
+if (settingsKeyboardBtn) {
+    settingsKeyboardBtn.addEventListener('click', () => {
+        if (keyboardShortcutsModal) {
+            keyboardShortcutsModal.classList.remove('hidden');
+            setTimeout(() => {
+                keyboardShortcutsModal.querySelector('.modal-panel').classList.remove('scale-95', 'opacity-0');
+                keyboardShortcutsModal.querySelector('.modal-panel').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+    });
+}
+
+if (closeKeyboardModal && keyboardShortcutsModal) {
+    closeKeyboardModal.addEventListener('click', () => {
+        keyboardShortcutsModal.querySelector('.modal-panel').classList.remove('scale-100', 'opacity-100');
+        keyboardShortcutsModal.querySelector('.modal-panel').classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            keyboardShortcutsModal.classList.add('hidden');
+        }, 300);
+    });
+    
+    keyboardShortcutsModal.addEventListener('click', (e) => {
+        if (e.target === keyboardShortcutsModal) {
+             keyboardShortcutsModal.querySelector('.modal-panel').classList.remove('scale-100', 'opacity-100');
+            keyboardShortcutsModal.querySelector('.modal-panel').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                keyboardShortcutsModal.classList.add('hidden');
+            }, 300);
+        }
+    });
+}
+
+if (settingsLogoutBtn) {
+    settingsLogoutBtn.addEventListener('click', () => {
+       import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js").then(({ signOut }) => {
+           signOut(window.auth).then(() => {
+                window.location.href = 'login.html';
+           }).catch(console.error);
+       });
+    });
+}
+
+loadSettings();

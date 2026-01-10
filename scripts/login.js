@@ -12,16 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     loginContainer.style.display = "none";
     registerContainer.style.display = "block";
-    document.querySelector("#welcome-block h1").innerHTML =
-      'Ready to <span class="traveler-text text-blue-500">Join?</span>';
   });
 
   showLoginLink.addEventListener("click", (e) => {
     e.preventDefault();
     registerContainer.style.display = "none";
     loginContainer.style.display = "block";
-    document.querySelector("#welcome-block h1").innerHTML =
-      'Welcome back, <span class="traveler-text text-blue-500">User!</span>';
   });
 
   loginForm.addEventListener("submit", async (e) => {

@@ -12,6 +12,7 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
         />
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
     </head>
     <body class="bg-gray-900 text-white min-h-screen">
@@ -19,7 +20,7 @@
             <header class="py-8 text-center relative">
                 <div class="mb-4 flex items-end justify-center gap-2">
                     <h2
-                        class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-[1.875rem]/[2.5rem] sm:text-[3rem]/[4rem] font-bold text-transparent"
+                        class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-[1.875rem]/[2.5rem] sm:text-[3rem]/[4rem] font-semibold text-transparent"
                     >
                         HiResAudioStreaming
                     </h2>
@@ -27,9 +28,11 @@
                 <p class="mx-auto max-w-2xl text-xl text-gray-400">
                     Try some Touhou music if you don't know what to listen to!
                 </p>
-                <button id="logoutBtn" class="absolute top-4 right-4 flex items-center gap-2 rounded-full transition-colors text-gray-400 hover:text-white hover:bg-white/10 px-4 py-2" title="logout">
-                    <i data-lucide="log-out" style="width: 16px; height: 16px"></i>
-                   <span class="text-sm font-semibold">Logout</span>
+                <button id="openSettingsBtn" class="absolute top-4 right-4 flex items-center gap-1 rounded-full transition-colors text-gray-400 hover:text-white hover:bg-white/10 px-4 py-2" title="Settings">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <i data-lucide="user" class="w-4 h-4 text-gray-300"></i>
+                    </div>
+                    <span class="text-sm font-semibold hidden sm:inline">Settings</span>
                 </button>
             </header>
 
@@ -666,6 +669,114 @@
         </div>
         </div>
 
+        <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+            <div id="settingsPanel" class="relative w-full max-w-[360px] mx-auto perspective-1000 transform transition-all duration-300 scale-95 opacity-0">
+                <div class="absolute -inset-4 bg-blue-500/20 rounded-[30px] blur-3xl opacity-50"></div>
+                
+                <div class="relative flex flex-col gap-3">
+                    
+                    <div class="glass-panel p-1 rounded-xl bg-gray-900 border border-white/10 shadow-xl">
+                         <button class="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 rounded-lg group transition-all duration-200 border border-transparent hover:border-white/5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white" id="settingsPcUsername">Guest User</div>
+                                    <div class="text-xs text-gray-400" id="settingsPcEmail">Free Account</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-xl overflow-hidden flex flex-col divide-y divide-white/5 bg-gray-900 border border-white/10 shadow-xl">
+                        
+
+
+                        <div class="w-full flex flex-col px-4 py-3.5 bg-black/40 border-l-2 border-blue-500">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3 text-white">
+                                    <i data-lucide="activity" class="w-4 h-4 text-blue-400"></i>
+                                    <span class="text-sm font-medium">Crossfade</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="settingsCrossfadeToggle" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 pl-7">
+                                <input type="range" id="settingsCrossfadeSlider" min="0" max="12000" step="100" class="flex-1 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                                <div class="relative">
+                                    <input type="number" id="settingsCrossfadeInput" value="0" class="w-16 bg-black/50 border border-white/10 rounded text-xs text-center py-1 text-white focus:outline-none focus:border-blue-500 no-spinners font-mono">
+                                    <span class="absolute right-1 top-1 text-[10px] text-gray-500 pointer-events-none">ms</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                         <div class="h-px bg-white/5 my-1"></div>
+
+                        <div class="flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors group">
+                            <div class="flex items-center gap-3 text-gray-300 group-hover:text-white transition-colors">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">Stats for Nerds</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="settingsStatsToggle" class="sr-only peer">
+                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                            </label>
+                        </div>
+
+                         <div class="h-px bg-white/5 my-1"></div>
+
+                        <button id="settingsKeyboardBtn" class="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors group text-left">
+                            <div class="flex items-center gap-3 text-gray-300 group-hover:text-white transition-colors">
+                                <i data-lucide="keyboard" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">Keyboard Shortcuts</span>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-white transition-colors"></i>
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-xl overflow-hidden flex flex-col divide-y divide-white/5 bg-gray-900 border border-white/10 shadow-xl">
+                        <button id="settingsLogoutBtn" class="w-full flex items-center justify-between px-4 py-3.5 hover:bg-red-500/10 transition-colors group text-left">
+                            <div class="flex items-center gap-3 text-red-400 group-hover:text-red-300 transition-colors">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span class="text-sm font-medium">Log Out</span>
+                            </div>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+        <div id="statsOverlay" class="fixed top-24 left-6 z-40 hidden font-mono text-xs text-green-400 bg-black/80 backdrop-blur-md border border-white/10 p-4 rounded-lg shadow-2xl select-text w-80 pointer-events-none transition-opacity duration-300">
+            <div class="mb-2 pb-2 border-b border-white/10 flex justify-between items-center">
+                <span class="font-bold text-white">Stats for Nerds</span>
+                <button id="statsCloseBtn" class="pointer-events-auto cursor-pointer hover:text-white text-gray-400 font-bold px-2">x</button>
+            </div>
+            <div class="space-y-1">
+                <div class="flex justify-between"><span class="text-gray-500">Track ID</span> <span id="statTrackId" class="text-white text-right break-all"> - </span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Format</span> <span id="statFormat" class="text-white text-right"> - </span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Volume (Gain)</span> <span id="statGain" class="text-white text-right"> - </span></div>
+                 <div class="flex justify-between"><span class="text-gray-500">Peak</span> <span id="statPeak" class="text-white text-right"> - </span></div>
+                
+                <div class="h-px bg-white/10 my-1"></div>
+                
+                <div class="flex justify-between"><span class="text-gray-500">Connection</span> <span id="statConnection" class="text-white text-right"> - </span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Bandwidth</span> <span id="statBandwidth" class="text-white text-right"> - </span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Buffer Health</span> <span id="statBuffer" class="text-white text-right"> 0.00 s </span></div>
+                
+                <div class="h-px bg-white/10 my-1"></div>
+                
+                <div class="flex justify-between"><span class="text-gray-500">ISRC</span> <span id="statIsrc" class="text-white text-right"> - </span></div>
+                 <div class="flex justify-between"><span class="text-gray-500">BPM / Key</span> <span id="statBpmKey" class="text-white text-right"> - </span></div>
+            </div>
+        </div>
+
         <div id="equalizerModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
             <div class="modal-panel max-w-5xl w-full max-h-[80vh] flex flex-col">
                 <div class="modal-header flex items-center justify-between p-5">
@@ -684,6 +795,105 @@
             </div>
         </div>
 
+        <div id="keyboardShortcutsModal" class="modal-overlay fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+            <div class="modal-panel max-w-4xl w-full flex flex-col glass-panel rounded-2xl overflow-hidden shadow-2xl border border-white/10 transform scale-95 opacity-0 transition-all duration-300">
+                <div class="modal-header flex items-center justify-between p-6 border-b border-white/5 bg-gray-900/50">
+                    <h3 class="modal-title text-xl font-semibold text-white flex items-center gap-3">
+                        <i data-lucide="keyboard" class="w-6 h-6 text-blue-400"></i> Keyboard Shortcuts
+                    </h3>
+                    <button id="closeKeyboardModal" class="p-2 rounded-full text-white/50 hover:bg-white/10 hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="p-8 overflow-y-auto max-h-[70vh] bg-gray-900/90">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                        
+                        <div>
+                            <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Playback</h4>
+                            <div class="flex flex-col gap-3">
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Play / Pause</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">Space</kbd>
+                                </div>
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Seek Forward (5s)</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">Right</kbd>
+                                </div>
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Seek Backward (5s)</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">Left</kbd>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Volume &amp; Tools</h4>
+                             <div class="flex flex-col gap-3">
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Increase Volume</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">Up</kbd>
+                                </div>
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Decrease Volume</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">Down</kbd>
+                                </div>
+                                <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Mute / Unmute</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">M</kbd>
+                                </div>
+                                 <div class="flex items-center justify-between group">
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Search</span>
+                                    <kbd class="px-2 py-1 text-xs font-mono font-bold text-gray-400 bg-white/5 border border-white/10 rounded group-hover:border-white/30 transition-colors">/</kbd>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="mt-10 p-8 rounded-xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-6 select-none relative overflow-hidden">
+                        <div class="absolute inset-0 bg-blue-500/5 blur-3xl rounded-full"></div>
+                        
+                        <div class="relative z-10 flex flex-col gap-3 scale-90 sm:scale-100">
+                            <div class="flex justify-center gap-2">
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-600 text-sm">J</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-600 text-sm">K</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-600 text-sm">L</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/10 bg-white/10 text-gray-400 text-sm font-bold ring-1 ring-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">M</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-600 text-sm">,</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/5 bg-white/5 text-gray-600 text-sm">.</div>
+                                <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-400 text-sm font-bold shadow-[0_0_15px_rgba(59,130,246,0.3)]">/</div>
+                            </div>
+                            
+                            <div class="flex items-start gap-2">
+
+                                
+                                <div class="w-64 h-12 flex items-center justify-center rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-400 text-xs font-bold shadow-[0_0_15px_rgba(59,130,246,0.3)] mr-4">SPACE</div>
+                                
+                                <div class="flex gap-2 items-end">
+                                    <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/10 bg-white/10 text-gray-300 shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                         <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/10 bg-white/10 text-gray-300 shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+                                            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                                         </div>
+                                         <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/10 bg-white/10 text-gray-300 shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+                                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                                         </div>
+                                    </div>
+                                    <div class="w-12 h-12 flex items-center justify-center rounded-lg border border-white/10 bg-white/10 text-gray-300 shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <script type="module" src="./scripts/firebase.js"></script>
         <script type="module">
             import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -694,7 +904,7 @@
                 }
             });
 
-            document.getElementById('logoutBtn').addEventListener('click', async function() {
+            document.getElementById('settingsLogoutBtn').addEventListener('click', async function() {
                 try {
                     await signOut(window.auth);
                     window.location.href = 'login.html';
