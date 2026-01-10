@@ -1,4 +1,4 @@
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/979b57e3-d5d4-4b63-b666-e46e61ccea81" /># *Sản Phẩm Cuối Khoá Web Development Intensive*
+# *Sản Phẩm Cuối Khoá Web Development Intensive*
 
 *HRAS* là dự án nhằm mang lại trải nghiệm âm nhạc tuyệt vời tại gia. *HRAS* sử dụng API HIFI của [sachinsenal0x64](https://github.com/sachinsenal0x64/hifi), TailwindCSS cho phần UI (cảm ơn [uimaxbai](https://github.com/uimaxbai/tidal-ui)) và Parametric EQ của [teropa và samueldiggins](https://github.com/teropa/weq8).
 
