@@ -2446,11 +2446,17 @@ const artistPageName = document.getElementById("artistPageName");
 const artistPageRoles = document.getElementById("artistPageRoles");
 const artistTopTracksGrid = document.getElementById("artistTopTracksGrid");
 const artistDiscographyGrid = document.getElementById("artistDiscographyGrid");
+
 const artistDiscographyPagination = document.getElementById("artistDiscographyPagination");
+const artistTopTracksPagination = document.getElementById("artistTopTracksPagination");
 
 let currentArtistAlbums = [];
 let currentDiscographyPage = 1;
 const DISCOGRAPHY_ITEMS_PER_PAGE = 10;
+
+let currentArtistTopTracks = []; 
+let currentTopTracksPage = 1;    
+const TOP_TRACKS_ITEMS_PER_PAGE = 10; 
 
 let currentArtistId = null;
 
@@ -2464,6 +2470,7 @@ async function showArtistPage(artistId) {
     artistPageImage.src = "https://placehold.co/320x320?text=Loading";
     artistPageRoles.innerHTML = "";
     artistTopTracksGrid.innerHTML = createSkeletonLoaders(1);
+    artistTopTracksPagination.innerHTML = "";
     artistDiscographyGrid.innerHTML = createSkeletonLoaders(1);
 
     try {
@@ -2532,7 +2539,7 @@ async function loadArtist(id) {
 
     return {
         ...artist,
-        topTracks: tracks.slice(0, 30),
+        topTracks: tracks, //returns all tracks whatdahelll
         albums: albums
     };
 }
@@ -2568,15 +2575,13 @@ function renderArtistPage(artist) {
         });
     }
 
-    artistTopTracksGrid.innerHTML = "";
     if (artist.topTracks.length === 0) {
         artistTopTracksGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No top tracks available.</div>';
     } else {
-        artist.topTracks.forEach((track, index) => {
+        artist.topTracks.forEach(track => {
              if (!track.artist) track.artist = { id: artist.id, name: artist.name };
-             const card = createTrackCard(track, index, artist.topTracks, { showIndex: true, trackNumber: index + 1 });
-             artistTopTracksGrid.appendChild(card);
         });
+        renderTopTracks(artist.topTracks);
     }
 
     renderDiscography(artist.albums);
@@ -2688,6 +2693,117 @@ function renderPaginationControls(totalPages) {
     }
 
     artistDiscographyPagination.appendChild(createIconBtn("chevron-right", currentDiscographyPage + 1, currentDiscographyPage === totalPages));
+    
+    lucide.createIcons();
+}
+
+function renderTopTracks(tracks) {
+    currentArtistTopTracks = tracks || [];
+    currentTopTracksPage = 1;
+    updateTopTracksView();
+}
+
+function updateTopTracksView() {
+    artistTopTracksGrid.innerHTML = "";
+    artistTopTracksPagination.innerHTML = "";
+
+    if (currentArtistTopTracks.length === 0) {
+        artistTopTracksGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No top tracks available.</div>';
+        return;
+    }
+
+    const totalPages = Math.ceil(currentArtistTopTracks.length / TOP_TRACKS_ITEMS_PER_PAGE);
+    
+    if (currentTopTracksPage > totalPages) currentTopTracksPage = totalPages;
+    if (currentTopTracksPage < 1) currentTopTracksPage = 1;
+
+    const start = (currentTopTracksPage - 1) * TOP_TRACKS_ITEMS_PER_PAGE;
+    const end = start + TOP_TRACKS_ITEMS_PER_PAGE;
+    const pageTracks = currentArtistTopTracks.slice(start, end);
+
+    pageTracks.forEach((track, index) => {
+        if (!track.artist && currentArtistId) {
+        }
+        const globalIndex = start + index;
+        const trackNumber = globalIndex + 1;
+        
+        const card = createTrackCard(track, index, pageTracks, { showIndex: true, trackNumber: trackNumber });
+        artistTopTracksGrid.appendChild(card);
+    });
+
+    if (totalPages > 1) {
+        renderTopTracksPaginationControls(totalPages);
+    }
+}
+
+function renderTopTracksPaginationControls(totalPages) {
+    artistTopTracksPagination.innerHTML = "";
+    
+    const createButton = (text, page, isActive = false, isDisabled = false) => {
+        const btn = document.createElement("button");
+        btn.className = `flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+            isActive 
+                ? "bg-blue-600 text-white" 
+                : "text-gray-400 hover:bg-white/10 hover:text-white"
+        } ${isDisabled ? "cursor-not-allowed opacity-50" : ""}`;
+        
+        btn.textContent = text;
+        
+        if (!isDisabled && !isActive) {
+            btn.addEventListener("click", () => {
+                currentTopTracksPage = page;
+                updateTopTracksView();
+            });
+        }
+        
+        return btn;
+    };
+
+    const createIconBtn = (iconName, page, isDisabled) => {
+        const btn = document.createElement("button");
+        btn.className = `flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-white/10 hover:text-white ${isDisabled ? "cursor-not-allowed opacity-50" : ""}`;
+        btn.innerHTML = `<i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i>`;
+        
+        if (!isDisabled) {
+             btn.addEventListener("click", () => {
+                currentTopTracksPage = page;
+                updateTopTracksView();
+            });
+        }
+        return btn;
+    };
+    const addEllipsis = () => {
+         const ellipsis = document.createElement("span");
+         ellipsis.className = "flex h-8 w-8 items-center justify-center text-gray-600";
+         ellipsis.textContent = "...";
+         artistTopTracksPagination.appendChild(ellipsis);
+    };
+
+    artistTopTracksPagination.appendChild(createIconBtn("chevron-left", currentTopTracksPage - 1, currentTopTracksPage === 1));
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentTopTracksPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+        artistTopTracksPagination.appendChild(createButton("1", 1));
+        if (startPage > 2) addEllipsis();
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        artistTopTracksPagination.appendChild(createButton(i.toString(), i, i === currentTopTracksPage));
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) addEllipsis();
+        artistTopTracksPagination.appendChild(createButton(totalPages.toString(), totalPages));
+    }
+
+    artistTopTracksPagination.appendChild(createIconBtn("chevron-right", currentTopTracksPage + 1, currentTopTracksPage === totalPages));
     
     lucide.createIcons();
 }
