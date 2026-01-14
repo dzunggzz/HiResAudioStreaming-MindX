@@ -394,8 +394,84 @@
             <span class="mx-2">check out <a href="https://github.com/uimaxbai/tidal-ui" class="underline hover:text-blue-400 transition-colors">uimaxbai</a> and <a href="https://github.com/sachinsenal0x64/hifi" class="underline hover:text-blue-400 transition-colors">sachinsenal0x64</a> on github</span>
         </footer>
 
+        <div id="pcFullscreenPlayer" class="fixed inset-0 z-[100] bg-gray-900 text-white min-h-screen overflow-hidden flex flex-col hidden transition-opacity duration-300 opacity-0">
+            <div class="absolute inset-0 z-0 pointer-events-none">
+                <img id="pcFsBackground" src="" class="w-full h-full object-cover opacity-40 blur-[100px] scale-125 saturate-150 transition-opacity duration-700">
+                <div class="absolute inset-0 bg-black/40"></div>
+            </div>
+
+            <div class="relative z-10 flex-1 flex flex-col p-8 md:p-12 lg:p-16 gap-8">
+                
+                <div class="flex justify-between items-center">
+                    <div class="flex flex-col">
+                        <h2 class="text-xs font-bold tracking-widest text-white/60 uppercase mb-1">Now Playing From Album</h2>
+                        <span id="pcFsAlbumTitle" class="text-sm font-semibold text-white/90">Album Title</span>
+                    </div>
+                    <button id="closePcFullscreenBtn" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors backdrop-blur-md border border-white/10">
+                        <i data-lucide="minimize-2" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 flex gap-12 lg:gap-24 items-center justify-center min-h-0 container mx-auto">
+                    
+                    <div class="w-1/2 max-w-xl aspect-square flex items-center justify-end relative group perspective-1000">
+                        <div class="relative w-full aspect-square rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transition-transform duration-500 ease-out">
+                            <img id="pcFsArt" src="https://placehold.co/600x600" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+
+                    <div class="w-1/2 max-w-2xl h-full max-h-[60vh] flex flex-col justify-center">
+                        <div class="w-full h-full relative overflow-hidden mask-linear-fade" id="pcFsLyricsContainer">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="w-full flex flex-col gap-6 container mx-auto max-w-5xl">
+                    
+                    <div class="flex items-center justify-between">
+                        
+                        <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                            <h1 id="pcFsTitle" class="text-3xl font-bold text-white truncate drop-shadow-md">Track Title</h1>
+                            <p id="pcFsArtist" class="text-lg text-white/60 truncate cursor-pointer hover:text-white transition-colors">Artist Name</p>
+                        </div>
+
+                        <div class="flex-1 flex items-center justify-center gap-8">
+                            <button id="pcFsShuffleBtn" class="text-white/40 hover:text-white transition-colors"><i data-lucide="shuffle" class="w-5 h-5"></i></button>
+                            <button id="pcFsPrevBtn" class="text-white hover:text-white/80 transition-colors"><i data-lucide="skip-back" class="w-8 h-8 fill-current"></i></button>
+                            <button id="pcFsPlayPauseBtn" class="w-20 h-20 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+                                <i data-lucide="play" id="pcFsPlayIcon" class="w-8 h-8 fill-current ml-1"></i>
+                            </button>
+                            <button id="pcFsNextBtn" class="text-white hover:text-white/80 transition-colors"><i data-lucide="skip-forward" class="w-8 h-8 fill-current"></i></button>
+                            <button id="pcFsRepeatBtn" class="text-white/40 hover:text-white transition-colors"><i data-lucide="repeat" class="w-5 h-5"></i></button>
+                        </div>
+
+                        <div class="flex-1 flex items-center justify-end gap-6">
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10" id="pcFsQualityBadge">
+                                <span class="text-[10px] font-bold tracking-wider text-white/80">LOSSLESS</span>
+                            </div>
+                            <button id="pcFsFavoriteBtn" class="text-white/40 hover:text-red-500 transition-colors"><i data-lucide="heart" class="w-6 h-6"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="w-full group pt-2 pb-1 cursor-pointer" id="pcFsProgressBarContainer">
+                        <div class="h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+                            <div id="pcFsBufferBar" class="absolute inset-y-0 left-0 bg-white/30 w-0 rounded-full transition-all duration-200"></div>
+                            <div id="pcFsProgressBar" class="absolute inset-y-0 left-0 bg-white w-0 rounded-full group-hover:bg-blue-400 transition-colors shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-white/40 font-medium mt-2 font-mono">
+                            <span id="pcFsCurrentTime">0:00</span>
+                            <span id="pcFsDuration">0:00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
         <div
-            class="audio-player-backdrop fixed inset-x-0 bottom-9 z-50 px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10"
+            class="audio-player-backdrop fixed inset-x-0 bottom-9 z-[200] px-4 pt-16 pb-10 sm:px-6 sm:pt-16 sm:pb-10"
             style="top: auto; padding: 0"
         >
             <div class="relative mx-auto w-full max-w-screen-2xl">
@@ -543,6 +619,14 @@
 
                                 <div class="flex items-center gap-2">
                                     <button
+                                        id="openPcFullscreenBtn"
+                                        class="hidden md:block p-1.5 sm:p-2 text-gray-400 hover:text-white transition-colors"
+                                        title="fullscreen"
+                                        aria-label="Toggle fullscreen"
+                                    >
+                                        <i data-lucide="maximize-2" style="width: 18px; height: 18px"></i>
+                                    </button>
+                                    <button
                                         id="queueBtn"
                                         class="hidden md:block p-1.5 sm:p-2"
                                         title="queue"
@@ -667,8 +751,9 @@
                     <div id="fsAmLyricsWrapper" class="w-full h-full text-lg"></div>
                 </div>
 
-                <div class="mb-8">
+                <div class="mb-5">
                     <div class="relative h-1 bg-white/10 rounded-full mb-2 cursor-pointer group" id="fsProgressBarContainer">
+                        <div id="fsBufferBar" class="absolute top-0 left-0 h-full bg-white/30 rounded-full w-0 transition-all duration-200"></div>
                         <div id="fsProgressBar" class="absolute top-0 left-0 h-full bg-white rounded-full w-0 group-hover:bg-blue-400 transition-colors"></div>
                         <div id="fsProgressThumb" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity" style="left: 0%"></div>
                     </div>
