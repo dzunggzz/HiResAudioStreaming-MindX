@@ -10,7 +10,7 @@ Chất lượng âm thanh: CD-quality (16-bit, 44.1kHz) LOSSLESS FLAC.
 > [!TIP]
 > Nếu bạn không biết nghe bài nào, hãy nghe thử mấy bài Touhou Vocal. 
 
-Changelog (as of 8th Jan. 2026):
+Changelog - 8th Jan. 2026:
 - [x] Implemented Album search
 - [x] Revamped UI/UX
 - [x] Revamped Artist search, a dedicated page for Artist's details has been created
@@ -25,6 +25,10 @@ Changelog - 10th Jan. 2026:
 - [x] New Login/Register UI (was using an UI from one of my OLDDDDDD projects)
 - [x] Settings Panel
 - [x] New Keyboard Shortcuts, check them out in the Settings Panel
+
+Changelog - 14th Jan. 2026:
+- [x] Mobile and PC fullscreen view
+- [x] Overall improvements in UX 
 
 Issues: ~~Track and Artist search functions are broken, no fix lol~~
 
