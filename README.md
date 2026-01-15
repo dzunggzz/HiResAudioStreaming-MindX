@@ -28,7 +28,9 @@ Changelog - 10th Jan. 2026:
 
 Changelog - 14th Jan. 2026:
 - [x] Mobile and PC fullscreen view
-- [x] Overall improvements in UX 
+- [x] Overall improvements in UX
+Changelog - 15th. Jan. 2026:
+- [x] Context Menu added, right-click on a track card or click/press the dedicated button! 
 
 Issues: ~~Track and Artist search functions are broken, no fix lol~~
 
