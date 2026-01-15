@@ -2086,6 +2086,10 @@ async function playAlbumContext(albumId) {
      }
 }
 
+window.showAlbumPage = showAlbumPage;
+window.showArtistPage = showArtistPage;
+window.playAlbumContext = playAlbumContext;
+
 
 
 let currentPlaylistIndex = null;
