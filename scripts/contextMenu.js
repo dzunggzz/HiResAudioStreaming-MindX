@@ -12,7 +12,6 @@ document.addEventListener('contextmenu', (e) => {
     }
 
     const trackId = trackCard.dataset.trackId;
-    // We assume window.getTrackById is implemented in API.js
     const track = window.getTrackById ? window.getTrackById(trackId) : null;
 
     if (!track) {
@@ -98,7 +97,14 @@ document.addEventListener('contextmenu', (e) => {
         closeMenu();
     };
     menu.querySelector('#ctx-album').onclick = () => {
-        if (window.showAlbumPage && track.album && track.album.id) window.showAlbumPage(track.album);
+        if (window.showAlbumPage && track.album && track.album.id) {
+            window.showAlbumPage({
+                id: track.album.id,
+                title: track.album.title,
+                cover: track.album.cover,
+                artists: [track.artist]
+            });
+        }
         closeMenu();
     };
      menu.querySelector('#ctx-play-next').onclick = () => {
@@ -110,7 +116,6 @@ document.addEventListener('contextmenu', (e) => {
     };
 
     const closeMenu = () => {
-        // Re-enable scrolling
         document.body.style.overflow = '';
         
         menu.classList.remove('scale-100', 'opacity-100');
