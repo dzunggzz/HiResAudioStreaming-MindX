@@ -8,6 +8,7 @@ import {
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { PlayerActions } from "./playerActions.js";
 
 const API_BASES = [
   "https://triton.squid.wtf",
@@ -458,7 +459,7 @@ const HISTORY_KEYS = {
     artists: "tidal_search_history_artists",
     albums: "tidal_search_history_albums"
 };
-const MAX_HISTORY = 10;
+const MAX_HISTORY = 5;
 
 function getSearchHistory() {
     const key = HISTORY_KEYS[currentSearchMode] || HISTORY_KEYS.tracks;
@@ -767,7 +768,6 @@ function createArtistCard(artist, index) {
             <p class="text-sm text-gray-400">${
               artist.artistTypes?.join(", ") || "Artist"
             }</p>
-            <p class="text-xs text-gray-500 mt-0.5 opacity-60">Artist Profile</p>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
             <button class="view-artist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="view artist">
@@ -852,65 +852,17 @@ function createTrackCard(song, index, list = currentList, options = {}) {
             </div>
         </div>
         <div class="flex items-center gap-2 text-sm text-gray-400">
-            <!-- Mobile Dropdown -->
             <div class="relative sm:hidden">
-                <button class="mobile-actions-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Actions">
+                <button class="mobile-actions-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Actions" onclick="showTrackContextMenu(event, '${song.id}')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 16 2 2 2-2"/>
-                        <path d="m3 8 2-2 2 2"/>
-                        <path d="M11 12h10"/>
-                        <path d="M11 18h10"/>
-                        <path d="M11 6h10"/>
+                         <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
                     </svg>
                 </button>
-                <div class="mobile-actions-dropdown absolute right-0 top-full mt-2 w-56 transform scale-95 opacity-0 invisible origin-top-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50 max-w-[calc(100vw-2rem)]">
-                    <button class="mobile-favorite-btn flex items-center gap-2.5 w-full px-4 py-2.5 text-left rounded-t-xl hover:bg-white/10 hover:text-white transition-colors ${isFav ? 'text-red-400' : 'text-gray-300'}">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                        ${isFav ? 'Remove from Favorites' : 'Add to Favorites'}
-                    </button>
-                    <button class="mobile-queue-btn flex items-center gap-2.5 w-full px-4 py-2.5 text-left text-gray-300 hover:bg-white/10 hover:text-white transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Add to Queue
-                    </button>
-                    <div class="relative">
-                         <button class="mobile-playlist-trigger flex items-center justify-between w-full px-4 py-2.5 text-left text-gray-300 hover:bg-white/10 hover:text-white transition-colors rounded-b-xl">
-                            <span class="flex items-center gap-2.5">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                                </svg>
-                                Add to Playlist
-                            </span>
-                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m6 9 6 6 6-6"/>
-                            </svg>
-                        </button>
-                        <div class="mobile-playlist-submenu hidden bg-gray-900 border-t border-white/10">
-                            ${userPlaylists.map((playlist, index) => `
-                                <button class="w-full text-left px-8 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white flex items-center gap-2" onclick="addToPlaylist(${index}, '${song.id}')">
-                                    <i data-lucide="music-2" class="w-4 h-4"></i>
-                                    ${playlist.title}
-                                </button>
-                            `).join('')}
-                            <button class="w-full text-left px-8 py-2 text-sm text-blue-400 hover:bg-gray-800 flex items-center gap-2" onclick="showCreatePlaylistModal()">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                Create new playlist
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            </div>
             </div>
 
-            <!-- Desktop Buttons -->
             <div class="hidden sm:flex items-center gap-2">
                 <button class="favorite-btn rounded-full p-2 transition-colors ${
                   isFav ? "text-red-400" : "text-gray-400"
@@ -923,109 +875,24 @@ function createTrackCard(song, index, list = currentList, options = {}) {
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
                 </button>
-                <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue" aria-label="Add to queue">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                
+                <button class="context-menu-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Current track options" onclick="showTrackContextMenu(event, '${song.id}')">
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
                     </svg>
                 </button>
-                <div class="relative">
-                    <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist" aria-label="Add to playlist">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"></line>
-                            <line x1="8" y1="12" x2="21" y2="12"></line>
-                            <line x1="8" y1="18" x2="21" y2="18"></line>
-                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                        </svg>
-                    </button>
-                    <div class="playlist-dropdown absolute right-0 bottom-full mb-2 w-56 transform scale-95 opacity-0 invisible origin-bottom-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50">
-                        <div class="p-2">
-                            <div class="text-xs text-gray-500 font-medium px-2 py-1.5 uppercase tracking-wider">Add to playlist</div>
-                            <div class="max-h-48 overflow-y-auto custom-scrollbar">
-                                ${userPlaylists
-                                  .map(
-                                    (playlist, index) => `
-                                    <button class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors flex items-center gap-2" data-playlist-index="${index}">
-                                        <i data-lucide="music-2" class="w-3 h-3"></i>
-                                        <span class="truncate">${playlist.title}</span>
-                                    </button>
-                                `
-                                  )
-                                  .join("")}
-                                <button class="w-full text-left px-2 py-1.5 text-sm text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors mt-1 flex items-center gap-2" id="createNewPlaylistFromDropdown">
-                                    <i data-lucide="plus" class="w-3 h-3"></i>
-                                    Create new playlist
-                                </button>
-                            </div>
-                        </div>
-                    </div>
             </div>
             <span>${formatTime(song.duration || 0)}</span>
         </div>
     `;
 
     const mobileActionsBtn = card.querySelector('.mobile-actions-btn');
-    const mobileDropdown = card.querySelector('.mobile-actions-dropdown');
-    
-    if (mobileActionsBtn && mobileDropdown) {
-        mobileActionsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = mobileDropdown.classList.contains('invisible');
-
-            document.querySelectorAll('.mobile-actions-dropdown').forEach(d => {
-                if (d !== mobileDropdown) {
-                    d.classList.add('invisible', 'opacity-0', 'scale-95');
-                    d.classList.remove('opacity-100', 'scale-100');
-                }
-            });
-
-            if (isHidden) {
-                mobileDropdown.classList.remove('invisible', 'opacity-0', 'scale-95');
-                mobileDropdown.classList.add('opacity-100', 'scale-100');
-            } else {
-                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
-                mobileDropdown.classList.remove('opacity-100', 'scale-100');
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!mobileActionsBtn.contains(e.target) && !mobileDropdown.contains(e.target)) {
-                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
-                mobileDropdown.classList.remove('opacity-100', 'scale-100');
-            }
-        });
-
-        const mobFavBtn = card.querySelector('.mobile-favorite-btn');
-        if (mobFavBtn) {
-            mobFavBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                await toggleFavorite(song);
-                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
-                mobileDropdown.classList.remove('opacity-100', 'scale-100');
-                if (list === currentList) displayResults(currentList);
-            });
-        }
-
-        const mobQueueBtn = card.querySelector('.mobile-queue-btn');
-        if (mobQueueBtn) {
-            mobQueueBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                addToQueue(song);
-                mobileDropdown.classList.add('invisible', 'opacity-0', 'scale-95');
-                mobileDropdown.classList.remove('opacity-100', 'scale-100');
-                alert("Added to queue"); 
-            });
-        }
-        const mobPlaylistTrigger = card.querySelector('.mobile-playlist-trigger');
-        const mobPlaylistSubmenu = card.querySelector('.mobile-playlist-submenu');
-        if (mobPlaylistTrigger && mobPlaylistSubmenu) {
-            mobPlaylistTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                mobPlaylistSubmenu.classList.toggle('hidden');
-            });
-        }
+    if (mobileActionsBtn) {
+         mobileActionsBtn.addEventListener('click', (e) => {
+             e.stopPropagation();
+         });
     }
 
   card.querySelector(".artist-link").addEventListener("click", (e) => {
@@ -1066,61 +933,6 @@ function createTrackCard(song, index, list = currentList, options = {}) {
       isNowFav ? "Remove from favorites" : "Add to favorites"
     );
   });
-
-  card.querySelector(".add-to-queue-btn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    addToQueue(song);
-  });
-
-  const addToPlaylistBtn = card.querySelector(".add-to-playlist-btn");
-  const dropdown = card.querySelector(".playlist-dropdown");
-
-  if (addToPlaylistBtn && dropdown) {
-      addToPlaylistBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isHidden = dropdown.classList.contains("invisible");
-        
-        document.querySelectorAll(".playlist-dropdown").forEach(d => {
-            if (d !== dropdown) {
-                d.classList.add("invisible", "opacity-0", "scale-95");
-                d.classList.remove("opacity-100", "scale-100");
-            }
-        });
-        
-        if (isHidden) {
-            dropdown.classList.remove("invisible", "opacity-0", "scale-95");
-            dropdown.classList.add("opacity-100", "scale-100");
-        } else {
-            dropdown.classList.add("invisible", "opacity-0", "scale-95");
-            dropdown.classList.remove("opacity-100", "scale-100");
-        }
-      });
-
-      dropdown.addEventListener("click", async (e) => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-        
-        if (btn.dataset.playlistIndex) {
-          e.stopPropagation();
-          const playlistIndex = parseInt(btn.dataset.playlistIndex);
-           await addTrackToPlaylist(playlistIndex, song);
-           dropdown.classList.add("invisible", "opacity-0", "scale-95");
-           dropdown.classList.remove("opacity-100", "scale-100");
-        } else if (btn.id === "createNewPlaylistFromDropdown") {
-          e.stopPropagation();
-          dropdown.classList.add("invisible", "opacity-0", "scale-95");
-          dropdown.classList.remove("opacity-100", "scale-100");
-          showCreatePlaylistModal();
-        }
-      });
-
-      document.addEventListener("click", (e) => {
-        if (!addToPlaylistBtn.contains(e.target) && !dropdown.contains(e.target)) {
-             dropdown.classList.add("invisible", "opacity-0", "scale-95");
-             dropdown.classList.remove("opacity-100", "scale-100");
-        }
-      });
-  }
 
   card.addEventListener("click", () => playSong(index, list));
 
@@ -1620,7 +1432,6 @@ function updatePlayButton(playing) {
     
     if (document.getElementById("fsPlayIcon")) {
         document.getElementById("fsPlayIcon").setAttribute("data-lucide", "pause");
-        document.getElementById("fsPlayIcon").classList.remove("translate-x-1");
     }
 
     if (document.getElementById("pcFsPlayIcon")) {
@@ -1639,7 +1450,6 @@ function updatePlayButton(playing) {
 
     if (document.getElementById("fsPlayIcon")) {
         document.getElementById("fsPlayIcon").setAttribute("data-lucide", "play");
-        document.getElementById("fsPlayIcon").classList.add("translate-x-1");
     }
 
     if (document.getElementById("pcFsPlayIcon")) {
@@ -2475,7 +2285,6 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                 </div>
                 
                 <div class="flex items-center gap-2 text-sm text-gray-400">
-                    <!-- Mobile Dropdown -->
                     <div class="relative sm:hidden">
                         <button class="mobile-actions-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Actions">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2531,48 +2340,20 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                         </div>
                     </div>
 
-                    <!-- Desktop Controls -->
                     <div class="hidden sm:flex items-center gap-2">
                         <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400" title="${isFav ? 'remove from favorites' : 'add to favorites'}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                         </button>
-                        <button class="add-to-queue-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to queue">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                        
+                        <button class="context-menu-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Current track options" onclick="showTrackContextMenu(event, '${track.id}')">
+                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="19" cy="12" r="1"></circle>
+                                <circle cx="5" cy="12" r="1"></circle>
                             </svg>
                         </button>
-                        <div class="relative">
-                            <button class="add-to-playlist-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="add to playlist">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                                </svg>
-                            </button>
-                             <div class="playlist-dropdown absolute bottom-full right-0 mb-2 w-56 transform scale-95 opacity-0 invisible origin-bottom-right rounded-xl bg-gray-900 ring-1 ring-white/10 shadow-2xl transition-all duration-200 z-50">
-                                <div class="p-2">
-                                    <div class="text-xs text-gray-500 font-medium px-2 py-1.5 uppercase tracking-wider">Add to playlist</div>
-                                    <div class="max-h-48 overflow-y-auto custom-scrollbar">
-                                        ${userPlaylists.map((pl, idx) => `
-                                            <button class="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors flex items-center gap-2" data-playlist-index="${idx}">
-                                                <i data-lucide="music-2" class="w-3 h-3"></i>
-                                                <span class="truncate">${pl.title}</span>
-                                            </button>
-                                        `).join("")}
-                                        <button class="w-full text-left px-2 py-1.5 text-sm text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors mt-1 flex items-center gap-2" onclick="showCreatePlaylistModal()">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
-                                            Create new playlist
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <span class="text-sm text-gray-400">${formatTime(track.duration || 0)}</span>
                 </div>
@@ -2655,58 +2436,6 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                  });
              }
 
-            const queueBtn = card.querySelector(".add-to-queue-btn");
-            if (queueBtn) {
-                queueBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    addToQueue(track);
-                    const icon = queueBtn.querySelector("svg");
-                    icon.style.stroke = "#60a5fa";
-                    setTimeout(() => icon.style.stroke = "currentColor", 500);
-                });
-            }
-
-            const playlistBtn = card.querySelector(".add-to-playlist-btn");
-            const dropdown = card.querySelector(".playlist-dropdown");
-             if (playlistBtn && dropdown) {
-                playlistBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const isHidden = dropdown.classList.contains("invisible");
-
-                    document.querySelectorAll(".playlist-dropdown").forEach(d => {
-                        if (d !== dropdown) {
-                            d.classList.add("invisible", "opacity-0", "scale-95");
-                            d.classList.remove("opacity-100", "scale-100");
-                        }
-                    });
-
-                    if (isHidden) {
-                        dropdown.classList.remove("invisible", "opacity-0", "scale-95");
-                        dropdown.classList.add("opacity-100", "scale-100");
-                    } else {
-                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
-                        dropdown.classList.remove("opacity-100", "scale-100");
-                    }
-                });
-
-                dropdown.querySelectorAll("button[data-playlist-index]").forEach(btn => {
-                    btn.addEventListener("click", async (e) => {
-                         e.stopPropagation();
-                        
-                        const idx = parseInt(btn.dataset.playlistIndex);
-                        await addTrackToPlaylist(idx, track.id); 
-                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
-                        dropdown.classList.remove("opacity-100", "scale-100");
-                    });
-                });
-
-                 document.addEventListener("click", (e) => {
-                    if (!playlistBtn.contains(e.target) && !dropdown.contains(e.target)) {
-                        dropdown.classList.add("invisible", "opacity-0", "scale-95");
-                        dropdown.classList.remove("opacity-100", "scale-100");
-                    }
-                });
-            }
 
             const artistLink = card.querySelector(".artist-link");
             if (artistLink) {
@@ -3233,10 +2962,7 @@ async function deletePlaylist(index) {
 
   const playlist = userPlaylists[index];
   try {
-    const docRef = doc(window.db, "playlists", currentUser.uid);
-    await updateDoc(docRef, {
-      playlists: arrayRemove(playlist),
-    });
+    await PlayerActions.deletePlaylist(window.db, currentUser, playlist);
 
     userPlaylists.splice(index, 1);
     displayMyPlaylists();
@@ -3315,37 +3041,8 @@ function showCreatePlaylistModal() {
 }
 
 async function createPlaylist(title, description = "") {
-  if (!currentUser) return;
-
-  const newPlaylist = {
-    uuid: `playlist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    title: title,
-    description: description,
-    numberOfTracks: 0,
-    duration: 0,
-    creator: {
-      id: currentUser.uid,
-      name: currentUser.displayName || currentUser.email,
-    },
-    created: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    type: "USER",
-    publicPlaylist: false,
-    tracks: [],
-    image: null,
-    squareImage: null,
-  };
-
   try {
-    const docRef = doc(window.db, "playlists", currentUser.uid);
-    await setDoc(
-      docRef,
-      {
-        playlists: arrayUnion(newPlaylist),
-      },
-      { merge: true }
-    );
-
+    const newPlaylist = await PlayerActions.createPlaylist(window.db, currentUser, title, description);
     userPlaylists.push(newPlaylist);
     displayMyPlaylists();
   } catch (error) {
@@ -3363,35 +3060,16 @@ async function addTrackToPlaylist(playlistIndex, track) {
 
   const playlist = userPlaylists[playlistIndex];
 
-  if (playlist.tracks.some((t) => t.id === track.id)) {
-    alert("This track is already in the playlist!");
-    return;
-  }
-
-  const updatedPlaylist = {
-    ...playlist,
-    tracks: [...playlist.tracks, track],
-    numberOfTracks: playlist.tracks.length + 1,
-    duration:
-      playlist.tracks.reduce((sum, t) => sum + (t.duration || 0), 0) +
-      (track.duration || 0),
-    lastUpdated: new Date().toISOString(),
-  };
-
   try {
-    const docRef = doc(window.db, "playlists", currentUser.uid);
-    await updateDoc(docRef, {
-      playlists: arrayRemove(playlist),
-    });
-    await updateDoc(docRef, {
-      playlists: arrayUnion(updatedPlaylist),
-    });
-
-    userPlaylists[playlistIndex] = updatedPlaylist;
-
-    console.log(`Added "${track.title}" to "${playlist.title}"`);
+      const updatedPlaylist = await PlayerActions.addTrackToPlaylist(window.db, currentUser, playlist, track);
+      userPlaylists[playlistIndex] = updatedPlaylist;
+      console.log(`Added "${track.title}" to "${playlist.title}"`);
   } catch (error) {
-    console.error("Error adding track to playlist:", error);
+      if (error.message === "Track already in playlist") {
+          alert("This track is already in the playlist!");
+      } else {
+          console.error("Error adding track to playlist:", error);
+      }
   }
 }
 
@@ -3409,31 +3087,42 @@ function isFavorite(track) {
 }
 
 async function toggleFavorite(track) {
-  if (!currentUser) return;
-
-  const index = favorites.findIndex((fav) => fav.id === track.id);
-  const docRef = doc(window.db, "favorites", currentUser.uid);
-
   try {
-    if (index > -1) {
-      favorites.splice(index, 1);
-      await updateDoc(docRef, {
-        tracks: arrayRemove(track),
-      });
-    } else {
-      favorites.push(track);
-      await setDoc(
-        docRef,
-        {
-          tracks: arrayUnion(track),
-        },
-        { merge: true }
-      );
-    }
+     const isAdded = await PlayerActions.toggleFavorite(window.db, currentUser, favorites, track);
+     
+     if (isAdded) {
+         favorites.push(track);
+     } else {
+         const index = favorites.findIndex((fav) => fav.id === track.id);
+         if (index > -1) favorites.splice(index, 1);
+     }
   } catch (error) {
     console.error("Error updating favorites:", error);
   }
 }
+
+function getTrackById(id) {
+    if (!id) return null;
+    if (typeof currentList !== 'undefined' && currentList) {
+        const found = currentList.find(t => t.id == id);
+        if (found) return found;
+    }
+    if (typeof queue !== 'undefined' && queue) {
+         const found = queue.find(t => t.id == id);
+         if (found) return found;
+    }
+    if (typeof favorites !== 'undefined' && favorites) {
+         const found = favorites.find(t => t.id == id);
+         if (found) return found;
+    }
+    return null;
+}
+
+window.getTrackById = getTrackById;
+window.toggleFavorite = toggleFavorite;
+window.addToQueue = addToQueue;
+window.showAddToPlaylistModal = showAddToPlaylistModal;
+window.isFavorite = isFavorite;
 
 function fadeVolume(targetVolume, duration = 300) {
   return new Promise((resolve) => {
@@ -3587,29 +3276,16 @@ function showAddToPlaylistModal(song) {
             
             try {
                const playlist = userPlaylists[idx];
-               if (!playlist.tracks) playlist.tracks = [];
-               
-               if (playlist.tracks.some(t => t.id === song.id)) {
-                   alert("Song already in playlist!");
-                   modal.remove();
-                   return;
-               }
-               
-               playlist.tracks.push(song);
-               
-               if (currentUser && playlist.id) {
-                   const plRef = doc(window.db, "playlists", playlist.id);
-                   await updateDoc(plRef, {
-                       tracks: arrayUnion(song)
-                   });
-                   alert(`Added to ${playlist.title}`);
-               } else {
-                   console.log("Local update only (no user/id)", playlist);
-                   alert(`Added to ${playlist.title} (Local)`);
-               }
+               const updatedPlaylist = await PlayerActions.addTrackToPlaylist(window.db, currentUser, playlist, song);
+               userPlaylists[idx] = updatedPlaylist;
+               alert(`Added to ${playlist.title}`);
             } catch (err) {
-                console.error("Error adding to playlist:", err);
-                alert("Failed to add to playlist");
+                if (err.message === "Track already in playlist") {
+                    alert("Song already in playlist!");
+                } else {
+                    console.error("Error adding to playlist:", err);
+                    alert("Failed to add to playlist");
+                }
             }
             modal.remove();
         };
