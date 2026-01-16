@@ -4,6 +4,7 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  getDoc,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 export const PlayerActions = {
@@ -101,5 +102,31 @@ export const PlayerActions = {
         isAdded = true;
     }
     return isAdded;
+  },
+
+  async addToRecentlyPlayed(db, currentUser, track) {
+    if (!currentUser || !track) return;
+    const docRef = doc(db, "history", currentUser.uid);
+    try {
+        const docSnap = await getDoc(docRef);
+        let history = [];
+        if (docSnap.exists()) {
+            history = docSnap.data().tracks || [];
+        }
+        
+        history = history.filter(t => t.id !== track.id);
+        
+        history.unshift(track);
+        
+        if (history.length > 20) {
+            history = history.slice(0, 20);
+        }
+        
+        await setDoc(docRef, { tracks: history }, { merge: true });
+        return history;
+    } catch (e) {
+        console.error("Error updating recently played:", e);
+        return null;
+    }
   }
 };
