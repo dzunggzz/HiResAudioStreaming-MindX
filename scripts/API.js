@@ -11,8 +11,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 import { PlayerActions } from "./playerActions.js";
 
 const API_BASES = [
-  "https://triton.squid.wtf",
-  "https://tidal-api-2.binimum.org"
+  "https://hifi-one.spotisaver.net",
+  "https://hifi-two.spotisaver.net"
 ];
 
 const IMAGE_API_BASE = "https://resources.tidal.com/images/";
@@ -537,6 +537,335 @@ function setupKeyboardShortcuts() {
     });
 }
 setupKeyboardShortcuts();
+setupTouchGestures();
+
+
+function closeMobileFullscreenPlayer() {
+    const player = document.getElementById("mobileFullscreenPlayer");
+    const backdrop = document.querySelector('.audio-player-backdrop');
+    if (player) {
+        player.classList.add("translate-y-full");
+        isMobileFullscreenOpen = false;
+        document.body.style.overflow = "";
+        if (backdrop) backdrop.classList.remove('hidden');
+        
+        const fsOptionsModal = document.getElementById("fsOptionsModal");
+        if (fsOptionsModal) fsOptionsModal.classList.add("translate-y-full");
+    }
+}
+
+function setupTouchGestures() {
+    const player = document.getElementById("mobileFullscreenPlayer");
+    const artWrapper = document.getElementById("fsArtWrapper");
+    
+    if (!player || !artWrapper) return;
+
+    let touchStartY = 0;
+    let touchMoveY = 0;
+    const minSwipeDistanceY = 100;
+
+    player.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        touchMoveY = 0;
+    }, { passive: true });
+
+    player.addEventListener('touchmove', (e) => {
+        touchMoveY = e.touches[0].clientY;
+        const deltaY = touchMoveY - touchStartY;
+        
+        if (deltaY > 0 && isMobileFullscreenOpen && !e.target.closest('#fsProgressBarContainer')) {
+             player.style.transform = `translateY(${deltaY}px)`;
+        }
+    }, { passive: true });
+
+    player.addEventListener('touchend', () => {
+        if (!touchMoveY) return; 
+        const deltaY = touchMoveY - touchStartY;
+
+        if (deltaY > minSwipeDistanceY && isMobileFullscreenOpen) {
+            closeMobileFullscreenPlayer();
+            setTimeout(() => { if(player) player.style.transform = ''; }, 300);
+        } else {
+             if (isMobileFullscreenOpen && player) {
+                 player.style.transform = '';
+             }
+        }
+        touchStartY = 0;
+        touchMoveY = 0;
+    });
+
+
+    let touchStartX = 0;
+    let touchMoveX = 0;
+    let lastTap = 0;
+    const minSwipeDistanceX = 60;
+    
+    artWrapper.style.perspective = "1000px";
+    artWrapper.style.transformStyle = "preserve-3d";
+    
+    
+    let currentImg = null;
+    let nextImg = null;
+    let prevImg = null;
+
+    artWrapper.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchMoveX = 0;
+        
+        currentImg = document.getElementById('fsPlayerImage');
+        if (currentImg) {
+            currentImg.style.transition = 'none';
+            currentImg.style.transform = 'translateZ(0) rotateY(0deg)';
+        }
+        
+        prepareSwipeImages(artWrapper);
+
+    }, { passive: true });
+
+    artWrapper.addEventListener('touchmove', (e) => {
+        touchMoveX = e.touches[0].clientX;
+        const deltaX = touchMoveX - touchStartX;
+        
+        if (Math.abs(deltaX) > 10) {
+            const rotation = Math.max(-45, Math.min(45, deltaX / 5));
+            const opacity = Math.max(0.5, 1 - Math.abs(deltaX) / 500);
+            
+            if (currentImg) {
+                currentImg.style.transform = `translateX(${deltaX}px) rotateY(${rotation / 2}deg)`;
+                currentImg.style.opacity = opacity;
+            }
+            
+            updateSwipeVisuals(deltaX);
+        }
+    }, { passive: true });
+
+    artWrapper.addEventListener('touchend', (e) => {
+        const now = new Date().getTime();
+        const tapDelay = now - lastTap;
+        
+        if (tapDelay < 300 && tapDelay > 0 && Math.abs(touchMoveX - touchStartX) < 10) {
+             if (navigator.vibrate) navigator.vibrate(50);
+             if (window.togglePlay) window.togglePlay();
+             createDoubleTapEffect(e);
+             lastTap = 0;
+             resetSwipeVisuals();
+             return;
+        }
+        lastTap = now;
+
+        if (touchMoveX) {
+            const deltaX = touchMoveX - touchStartX;
+
+            if (Math.abs(deltaX) > minSwipeDistanceX) {
+                if (navigator.vibrate) navigator.vibrate(10);
+                if (currentImg) {
+                     currentImg.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                     const targetX = deltaX > 0 ? window.innerWidth : -window.innerWidth;
+                     currentImg.style.transform = `translateX(${targetX}px) rotateY(${deltaX > 0 ? 45 : -45}deg)`;
+                     currentImg.style.opacity = '0';
+                }
+
+                setTimeout(() => {
+                    if (deltaX > 0) {
+                        if (window.playPrevSong) window.playPrevSong();
+                    } else {
+                        if (window.playNextSong) window.playNextSong();
+                    }
+                    resetSwipeVisuals();
+                }, 250); 
+            } else {
+               resetSwipeVisuals();
+            }
+        } else {
+            resetSwipeVisuals();
+        }
+        
+        touchStartX = 0;
+        touchMoveX = 0;
+    });
+    
+    function prepareSwipeImages(container) {
+        
+        if (!document.getElementById('swipePrevImg')) {
+            const img = document.createElement('img');
+            img.id = 'swipePrevImg';
+            img.className = 'absolute top-0 left-0 w-full h-full object-cover rounded-2xl brightness-50';
+            img.style.transform = 'translateX(-100%) translateZ(-200px) rotateY(45deg)';
+            img.style.zIndex = '-1';
+            img.style.display = 'none';
+            container.appendChild(img);
+        }
+        if (!document.getElementById('swipeNextImg')) {
+            const img = document.createElement('img');
+            img.id = 'swipeNextImg';
+            img.className = 'absolute top-0 left-0 w-full h-full object-cover rounded-2xl brightness-50';
+            img.style.transform = 'translateX(100%) translateZ(-200px) rotateY(-45deg)';
+            img.style.zIndex = '-1';
+            img.style.display = 'none';
+            container.appendChild(img);
+        }
+        
+        const prev = getTrackById(getIdFromQueue(currentSong - 1));
+        const next = getTrackById(getIdFromQueue(currentSong + 1));
+        
+        const prevEl = document.getElementById('swipePrevImg');
+        const nextEl = document.getElementById('swipeNextImg');
+        
+        if (prevEl && prev) {
+             const url = prev.album?.cover || prev.picture;
+             if(url) prevEl.src = `${IMAGE_API_BASE}${url.split("-").join("/")}/320x320.jpg`;
+        }
+        if (nextEl && next) {
+             const url = next.album?.cover || next.picture;
+             if(url) nextEl.src = `${IMAGE_API_BASE}${url.split("-").join("/")}/320x320.jpg`;
+        }
+    }
+    
+    function updateSwipeVisuals(deltaX) {
+        const prevEl = document.getElementById('swipePrevImg');
+        const nextEl = document.getElementById('swipeNextImg');
+        
+        if (deltaX > 0 && prevEl) {
+            prevEl.style.display = 'block';
+            prevEl.style.transition = 'none';
+            const progress = Math.min(1, deltaX / window.innerWidth);
+            prevEl.style.transform = `translateX(${-100 + (progress * 80)}%) translateZ(${-200 + (progress * 200)}px) rotateY(${45 - (progress * 45)}deg)`;
+            prevEl.style.zIndex = '-1';
+        } else if (deltaX < 0 && nextEl) {
+            nextEl.style.display = 'block';
+            nextEl.style.transition = 'none';
+            const progress = Math.min(1, Math.abs(deltaX) / window.innerWidth);
+            nextEl.style.transform = `translateX(${100 - (progress * 80)}%) translateZ(${-200 + (progress * 200)}px) rotateY(${-45 + (progress * 45)}deg)`;
+            nextEl.style.zIndex = '-1';
+        }
+    }
+    
+    function resetSwipeVisuals() {
+        const current = document.getElementById('fsPlayerImage');
+        const prevEl = document.getElementById('swipePrevImg');
+        const nextEl = document.getElementById('swipeNextImg');
+        
+        if (current) {
+            current.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+            current.style.transform = '';
+            current.style.opacity = '1';
+        }
+        if (prevEl) {
+             prevEl.style.transition = 'transform 0.3s ease-out';
+             prevEl.style.transform = 'translateX(-100%) translateZ(-200px) rotateY(45deg)';
+             setTimeout(() => prevEl.style.display = 'none', 300);
+        }
+        if (nextEl) {
+             nextEl.style.transition = 'transform 0.3s ease-out';
+             nextEl.style.transform = 'translateX(100%) translateZ(-200px) rotateY(-45deg)';
+             setTimeout(() => nextEl.style.display = 'none', 300);
+        }
+    }
+    
+    function getIdFromQueue(idx) {
+        if (!queue || queue.length === 0) return null;
+        if (isShuffle) return null;
+        let i = idx;
+        if (i < 0) i = queue.length - 1;
+        if (i >= queue.length) i = 0;
+        return queue[i] ? queue[i].id : null;
+    }
+
+    setupSwipeToDismiss('mobileQueueModal', () => {
+        const modal = document.getElementById('mobileQueueModal');
+        if (modal) modal.classList.add('translate-y-full');
+    });
+    
+    setupSwipeToDismiss('fsOptionsModal', () => {
+        const modal = document.getElementById('fsOptionsModal');
+        if (modal) modal.classList.add('translate-y-full');
+    });
+}
+
+function setupSwipeToDismiss(elementId, closeCallback, threshold = 100) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    element.addEventListener('touchstart', (e) => {
+        const scrollContainer = element.querySelector('.overflow-y-auto') || element;
+        if (scrollContainer && scrollContainer.scrollTop > 0) return;
+
+        startY = e.touches[0].clientY;
+        isDragging = true;
+    }, { passive: true });
+
+    element.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+
+        if (deltaY > 0) {
+            if (e.cancelable) e.preventDefault(); 
+            element.style.transition = 'none';
+            element.style.transform = `translateY(${deltaY}px)`;
+        }
+    }, { passive: false });
+
+    element.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        const deltaY = currentY - startY;
+        element.style.transition = 'transform 0.3s ease-out';
+
+        if (deltaY > threshold) {
+            closeCallback();
+            setTimeout(() => {
+                element.style.transform = '';
+            }, 300);
+        } else {
+            element.style.transform = ''; 
+        }
+        startY = 0;
+        currentY = 0;
+    });
+}
+    
+function createDoubleTapEffect(e) {
+    const isPlaying = !document.getElementById("audio").paused;
+    
+    const heart = document.createElement('div');
+    heart.innerHTML = isPlaying 
+        ? `<svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-white drop-shadow-lg"><polygon points="5,3 19,12 5,21"></polygon></svg>`
+        : `<svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-white drop-shadow-lg"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`; 
+        
+    
+    
+    
+    
+    heart.style.position = 'absolute';
+    heart.style.left = '50%';
+    heart.style.top = '50%';
+    heart.style.transform = 'translate(-50%, -50%) scale(0)';
+    heart.style.zIndex = '100';
+    heart.style.pointerEvents = 'none';
+    
+    const container = document.getElementById('fsArtWrapper');
+    if (container) {
+        container.appendChild(heart);
+        
+        requestAnimationFrame(() => {
+            heart.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-in';
+            heart.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            heart.style.opacity = '0';
+        });
+
+        setTimeout(() => {
+            heart.remove();
+        }, 400);
+    }
+}
+
+
 
 const HISTORY_KEYS = {
     tracks: "tidal_search_history_tracks",
@@ -783,7 +1112,11 @@ function createAlbumCard(album, extraClasses = "") {
     `;
 
     card.addEventListener("click", () => {
-        showAlbumPage(album);
+        if (document.startViewTransition) {
+             document.startViewTransition(() => showAlbumPage(album));
+        } else {
+             showAlbumPage(album);
+        }
     });
     
     card.querySelector(".play-album-btn").addEventListener("click", (e) => {
@@ -927,7 +1260,13 @@ function createArtistCard(artist, index) {
 }
 
 function viewArtistProfile(artist) {
-  showArtistPage(artist.id);
+  if (document.startViewTransition) {
+      document.startViewTransition(() => {
+          showArtistPage(artist.id);
+      });
+  } else {
+      showArtistPage(artist.id);
+  }
 }
 
 function displayResults(songs) {
@@ -1042,12 +1381,20 @@ function createTrackCard(song, index, list = currentList, options = {}) {
   card.querySelector(".album-link").addEventListener("click", (e) => {
     e.stopPropagation();
     if (song.album && song.album.id) {
-        showAlbumPage({
-            id: song.album.id,
-            title: song.album.title,
-            cover: song.album.cover,
-            artists: [song.artist]
-        });
+        const navigate = () => {
+            showAlbumPage({
+                id: song.album.id,
+                title: song.album.title,
+                cover: song.album.cover,
+                artists: [song.artist]
+            });
+        };
+
+        if (document.startViewTransition) {
+             document.startViewTransition(() => navigate());
+        } else {
+             navigate();
+        }
     }
   });
 
@@ -3203,14 +3550,16 @@ function fadeVolume(targetVolume, duration = 300) {
 }
 
 function createSkeletonLoaders(count) {
-  return `
-    <div class="col-span-full flex justify-center items-center py-20">
-        <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+  return Array(count).fill(0).map(() => `
+    <div class="flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-white/5">
+        <div class="h-16 w-16 rounded-lg animate-shimmer flex-shrink-0"></div>
+        <div class="flex-1 min-w-0 space-y-2">
+            <div class="h-4 w-3/4 rounded animate-shimmer"></div>
+            <div class="h-3 w-1/2 rounded animate-shimmer"></div>
+        </div>
+        <div class="h-4 w-12 rounded animate-shimmer"></div>
     </div>
-  `;
+  `).join('');
 }
 
 
