@@ -1,0 +1,24 @@
+{
+  "src/runtime.ts": {
+    "file": "runtime.cjs",
+    "src": "src/runtime.ts",
+    "isEntry": true,
+    "imports": [
+      "_functions.207777d9.cjs"
+    ]
+  },
+  "src/ui/index.ts": {
+    "file": "ui.cjs",
+    "src": "src/ui/index.ts",
+    "isEntry": true,
+    "imports": [
+      "_functions.207777d9.cjs"
+    ]
+  },
+  "_functions.697e57cd.js": {
+    "file": "functions.697e57cd.js"
+  },
+  "_functions.207777d9.cjs": {
+    "file": "functions.207777d9.cjs"
+  }
+}

@@ -1,0 +1,11 @@
+import { FilterType } from "./spec";
+export declare function filterHasGain(type: FilterType | "noop"): boolean;
+export declare function filterHasFrequency(type: FilterType | "noop"): boolean;
+export declare function filterHasQ(type: FilterType | "noop"): boolean;
+export declare function getBiquadFilterType(filterType: FilterType): BiquadFilterType;
+export declare function getBiquadFilterOrder(filterType: FilterType | "noop"): 0 | 1 | 2;
+export declare function toLog10(lin: number, minLin: number, maxLin: number): number;
+export declare function toLin(log: number, minLin: number, maxLin: number): number;
+export declare function clamp(val: number, min: number, max: number): number;
+export declare function formatFrequency(freq: number, keepHz?: boolean): string;
+export declare function formatFrequencyUnit(freq: number, keepHz?: boolean): "kHz" | "Hz";
