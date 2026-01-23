@@ -11,9 +11,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/fi
 import { PlayerActions } from "./playerActions.js";
 
 const API_BASES = [
-    "https://katze.qqdl.site",
-    "https://maus.qqdl.site",
-    "https://vogel.qqdl.site",
   "https://hifi-one.spotisaver.net",
   "https://hifi-two.spotisaver.net"
 ];
