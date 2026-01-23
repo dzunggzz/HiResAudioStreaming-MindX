@@ -2430,6 +2430,7 @@ muteBtn.addEventListener("click", (e) => {
 });
 
 
+
 function updateProgress(e) {
   if (!audio.duration) return;
 
@@ -2437,11 +2438,12 @@ function updateProgress(e) {
   const clickX = e.clientX - rect.left;
   const width = rect.width;
   const duration = audio.duration;
-  const newTime = (clickX / width) * duration;
+  const newTime = Math.max(0, Math.min(duration, (clickX / width) * duration));
 
   if (isDragging) {
     dragProgress = newTime;
     progressBar.style.width = `${(newTime / duration) * 100}%`;
+    currentTimeEl.textContent = formatTime(newTime); 
   } else {
     audio.currentTime = newTime;
   }
@@ -2449,31 +2451,32 @@ function updateProgress(e) {
 
 progressContainer.addEventListener("mousedown", async (e) => {
   wasPlaying = isPlaying;
-  if (isPlaying) {
-    await fadeVolume(0, 100);
-  }
   isDragging = true;
   updateProgress(e);
 });
+
+if (pcFsProgressBarContainer) {
+    pcFsProgressBarContainer.addEventListener("mousedown", (e) => {
+        isPcFsDragging = true;
+        updatePcFsProgress(e);
+    });
+}
 
 document.addEventListener("mousemove", (e) => {
   if (isDragging) {
     updateProgress(e);
   }
   if (isPcFsDragging) {
-      updatePcFsProgress(e);
+    updatePcFsProgress(e);
   }
   if (isFsDragging) {
-      updateFsProgress(e);
+    updateFsProgress(e);
   }
 });
 
 document.addEventListener("mouseup", async () => {
   if (isDragging) {
     audio.currentTime = dragProgress;
-    if (wasPlaying) {
-      await fadeVolume(volumeSlider.value, 100);
-    }
     isDragging = false;
   }
   if (isPcFsDragging) {
@@ -2488,6 +2491,7 @@ document.addEventListener("mouseup", async () => {
       }
   }
 });
+
 
 function displayFavorites() {
   currentList = favorites;
@@ -4279,6 +4283,7 @@ if (fsProgressBarContainer) {
         updateFsProgress(e);
     });
 }
+
 function updateFsProgress(e) {
   if (!audio.duration) return;
   const rect = fsProgressBarContainer.getBoundingClientRect();
@@ -4291,10 +4296,12 @@ function updateFsProgress(e) {
     fsDragProgress = newTime;
     if (fsProgressBar) fsProgressBar.style.width = `${(newTime / duration) * 100}%`;
     if (fsProgressThumb) fsProgressThumb.style.left = `${(newTime / duration) * 100}%`;
+    if (document.getElementById("fsCurrentTime")) document.getElementById("fsCurrentTime").textContent = formatTime(newTime);
   } else {
     audio.currentTime = newTime;
   }
 }
+
 
 
 let isMobileLyricsOpen = false;
