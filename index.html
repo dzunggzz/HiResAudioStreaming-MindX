@@ -263,7 +263,7 @@
         <div class="container mx-auto px-4 py-8 max-w-7xl space-y-6 pb-48 lg:pb-64">
             <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 md:hidden"></div>
             <button id="closeArtistPageBtn"
-                class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white mb-2">
+                class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white mb-2 cursor-pointer">
                 <i data-lucide="arrow-left" style="width: 20px; height: 20px"></i>
                 Back
             </button>
@@ -335,13 +335,13 @@
             <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 md:hidden"></div>
             <div class="flex items-center justify-between mb-2">
                 <button id="closePlaylistPageBtn"
-                    class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white">
+                    class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white cursor-pointer">
                     <i data-lucide="arrow-left" style="width: 20px; height: 20px"></i>
                     Back
                 </button>
 
                 <button id="deletePlaylistPageBtn"
-                    class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors">
+                    class="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer">
                     <i data-lucide="trash-2" style="width: 16px; height: 16px"></i>
                     Delete Playlist
                 </button>
@@ -367,12 +367,12 @@
 
                     <div class="flex items-center gap-3 mt-2">
                         <button id="playPlaylistPageBtn"
-                            class="flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20">
+                            class="flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20 cursor-pointer">
                             <i data-lucide="play" class="fill-current" style="width: 20px; height: 20px"></i>
                             Play
                         </button>
                         <button id="editPlaylistBtn"
-                            class="flex items-center gap-2 rounded-full bg-gray-700 px-6 py-3 font-medium text-white transition-colors hover:bg-gray-600">
+                            class="flex items-center gap-2 rounded-full bg-gray-700 px-6 py-3 font-medium text-white transition-colors hover:bg-gray-600 cursor-pointer">
                             <i data-lucide="pencil" style="width: 18px; height: 18px"></i>
                             Edit
                         </button>
@@ -402,7 +402,7 @@
         <div class="container mx-auto px-4 py-8 max-w-7xl space-y-6 pb-48 lg:pb-64">
             <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 md:hidden"></div>
             <button id="closeAlbumPageBtn"
-                class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white mb-2">
+                class="flex items-center gap-2 text-gray-400 transition-colors hover:text-white mb-2 cursor-pointer">
                 <i data-lucide="arrow-left" style="width: 20px; height: 20px"></i>
                 Back
             </button>
@@ -434,12 +434,12 @@
 
                     <div class="flex flex-wrap items-center gap-3">
                         <button id="playAlbumPageBtn"
-                            class="flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20">
+                            class="flex items-center gap-2 rounded-full bg-blue-500 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-400 active:scale-95 shadow-lg shadow-blue-500/20 cursor-pointer">
                             <i data-lucide="play" class="fill-current" style="width: 20px; height: 20px"></i>
                             Play All
                         </button>
                         <button id="shuffleAlbumPageBtn"
-                            class="flex items-center gap-2 rounded-full border border-purple-500/30 px-6 py-3 text-sm font-semibold text-purple-300 transition-colors hover:border-purple-400 hover:text-purple-200">
+                            class="flex items-center gap-2 rounded-full border border-purple-500/30 px-6 py-3 text-sm font-semibold text-purple-300 transition-colors hover:border-purple-400 hover:text-purple-200 cursor-pointer">
                             <i data-lucide="shuffle" style="width: 18px; height: 18px"></i>
                             Shuffle
                         </button>
@@ -541,25 +541,25 @@
 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-6">
-                        <button id="pcFsShuffleBtn" class="text-white/40 hover:text-white transition-colors"><i
+                        <button id="pcFsShuffleBtn" class="text-white/40 hover:text-white transition-colors cursor-pointer"><i
                                 data-lucide="shuffle" class="w-5 h-5"></i></button>
-                        <button id="pcFsRepeatBtn" class="text-white/40 hover:text-white transition-colors"><i
+                        <button id="pcFsRepeatBtn" class="text-white/40 hover:text-white transition-colors cursor-pointer"><i
                                 data-lucide="repeat" class="w-5 h-5"></i></button>
                     </div>
 
                     <div class="flex items-center gap-8">
-                        <button id="pcFsPrevBtn" class="text-white hover:text-white/80 transition-colors"><i
+                        <button id="pcFsPrevBtn" class="text-white hover:text-white/80 transition-colors cursor-pointer"><i
                                 data-lucide="skip-back" class="w-8 h-8 fill-current"></i></button>
                         <button id="pcFsPlayPauseBtn"
-                            class="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                            <i data-lucide="play" id="pcFsPlayIcon" class="w-6 h-6 fill-current ml-1"></i>
+                            class="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)] cursor-pointer">
+                            <i data-lucide="play" id="pcFsPlayIcon" class="w-6 h-6 fill-current"></i>
                         </button>
-                        <button id="pcFsNextBtn" class="text-white hover:text-white/80 transition-colors"><i
+                        <button id="pcFsNextBtn" class="text-white hover:text-white/80 transition-colors cursor-pointer"><i
                                 data-lucide="skip-forward" class="w-8 h-8 fill-current"></i></button>
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <button id="pcFsFavoriteBtn" class="text-white/40 hover:text-red-500 transition-colors"><i
+                        <button id="pcFsFavoriteBtn" class="text-white/40 hover:text-red-500 transition-colors cursor-pointer"><i
                                 data-lucide="heart" class="w-5 h-5"></i></button>
                     </div>
                 </div>
@@ -610,7 +610,7 @@
                         <div class="flex flex-nowrap items-center justify-around gap-2 sm:gap-4">
                             <div class="flex items-center justify-center gap-1 sm:gap-2">
                                 <button id="prevBtn"
-                                    class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
+                                    class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50 cursor-pointer"
                                     title="previous" aria-label="Previous track">
                                     <i data-lucide="skip-back" style="
                                                 width: 18px;
@@ -618,7 +618,7 @@
                                             "></i>
                                 </button>
                                 <button id="playBtn"
-                                    class="rounded-full bg-white p-2.5 sm:p-3 text-gray-900 transition-transform hover:scale-105"
+                                    class="rounded-full bg-white p-2.5 sm:p-3 text-gray-900 transition-transform hover:scale-105 cursor-pointer"
                                     title="play/pause" aria-label="Play or pause">
                                     <i data-lucide="play" class="play-icon" style="
                                                 width: 20px;
@@ -631,7 +631,7 @@
                                             "></i>
                                 </button>
                                 <button id="nextBtn"
-                                    class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50"
+                                    class="p-1.5 sm:p-2 text-gray-400 transition-colors hover:text-white disabled:opacity-50 cursor-pointer"
                                     title="next" aria-label="Next track">
                                     <i data-lucide="skip-forward" style="
                                                 width: 18px;
@@ -641,7 +641,7 @@
                             </div>
 
                             <div class="hidden sm:flex items-center gap-2">
-                                <button id="muteBtn" class="p-1 sm:p-2 text-gray-400 transition-colors hover:text-white"
+                                <button id="muteBtn" class="p-1 sm:p-2 text-gray-400 transition-colors hover:text-white cursor-pointer"
                                     title="volume" aria-label="Volume control">
                                     <i data-lucide="volume-2" style="
                                                 width: 16px;
@@ -655,11 +655,11 @@
 
                             <div class="flex items-center gap-2">
                                 <button id="openPcFullscreenBtn"
-                                    class="hidden md:block p-1.5 sm:p-2 text-gray-400 hover:text-white transition-colors"
+                                    class="hidden md:block p-1.5 sm:p-2 text-gray-400 hover:text-white transition-colors cursor-pointer"
                                     title="fullscreen" aria-label="Toggle fullscreen">
                                     <i data-lucide="maximize-2" style="width: 18px; height: 18px"></i>
                                 </button>
-                                <button id="queueBtn" class="hidden md:block p-1.5 sm:p-2" title="queue"
+                                <button id="queueBtn" class="hidden md:block p-1.5 sm:p-2 cursor-pointer" title="queue"
                                     aria-label="Toggle queue panel">
                                     <i data-lucide="list-music" style="
                                                 width: 16px;
@@ -668,21 +668,21 @@
                                     <span id="queueCount" style="display: none !important;">
                                     </span>
                                 </button>
-                                <button id="equalizerBtn" class="hidden sm:block p-1.5 sm:p-2 transition-colors"
+                                <button id="equalizerBtn" class="hidden sm:block p-1.5 sm:p-2 cursor-pointer"
                                     title="equalizer" aria-label="Toggle equalizer">
                                     <i data-lucide="sliders" style="
                                                 width: 16px;
                                                 height: 16px;
                                             "></i>
                                 </button>
-                                <button id="lyricsBtn" class="hidden md:block p-1.5 sm:p-2" title="lyrics"
+                                <button id="lyricsBtn" class="hidden md:block p-1.5 sm:p-2 cursor-pointer" title="lyrics"
                                     aria-label="Show lyrics">
                                     <i data-lucide="mic-2" style="
                                                 width: 16px;
                                                 height: 16px;
                                             "></i>
                                 </button>
-                                <button id="repeatBtn" class="hidden md:block p-1.5 sm:p-2 text-gray-400" title="repeat"
+                                <button id="repeatBtn" class="hidden md:block p-1.5 sm:p-2 cursor-pointer" title="repeat"
                                     aria-label="Toggle repeat mode">
                                     <i data-lucide="repeat" style="
                                                 width: 16px;
