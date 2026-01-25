@@ -1521,7 +1521,7 @@ function createTrackCard(song, index, list = currentList, options = {}) {
             </div>
 
             <div class="hidden sm:flex items-center gap-2">
-                <button class="favorite-btn rounded-full p-2 transition-colors ${
+                <button class="cursor-pointer favorite-btn rounded-full p-2 transition-colors ${
                   isFav ? "text-red-400" : "text-gray-400"
                 } hover:text-red-400" title="${
         isFav ? "remove from favorites" : "add to favorites"
@@ -1645,7 +1645,21 @@ equalizerModal.addEventListener("click", (e) => {
 function addToQueue(song) {
   queue.push(song);
   renderQueue();
+  if (typeof showToast === 'function') showToast(`Added to queue: ${song.title}`, "success");
 }
+
+window.playNext = function(song) {
+    if (!song) return;
+
+    if (queue.length === 0) {
+        playSong(0, [song]);
+        return;
+    }
+    
+    queue.splice(currentSong + 1, 0, song);
+    renderQueue();
+    if (typeof showToast === 'function') showToast(`Playing next: ${song.title}`, "success");
+};
 
 function removeFromQueue(index) {
   queue.splice(index, 1);
@@ -1677,26 +1691,32 @@ function renderQueue() {
   });
 
   queueListContainer.appendChild(ul);
+  
+  if (!isShuffle) {
+      new Sortable(ul, {
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        onEnd: function (evt) {
+          const oldIndex = evt.oldIndex;
+          const newIndex = evt.newIndex;
+          const movedItem = queue.splice(oldIndex, 1)[0];
+          queue.splice(newIndex, 0, movedItem);
+    
+          if (currentSong === oldIndex) {
+            currentSong = newIndex;
+          } else if (oldIndex < currentSong && newIndex >= currentSong) {
+            currentSong--;
+          } else if (oldIndex > currentSong && newIndex <= currentSong) {
+            currentSong++;
+          }
 
-  new Sortable(ul, {
-    animation: 150,
-    ghostClass: "sortable-ghost",
-    onEnd: function (evt) {
-      const oldIndex = evt.oldIndex;
-      const newIndex = evt.newIndex;
-      const movedItem = queue.splice(oldIndex, 1)[0];
-      queue.splice(newIndex, 0, movedItem);
-
-      if (currentSong === oldIndex) {
-        currentSong = newIndex;
-      } else if (oldIndex < currentSong && newIndex >= currentSong) {
-        currentSong--;
-      } else if (oldIndex > currentSong && newIndex <= currentSong) {
-        currentSong++;
-      }
-      renderQueue();
-    },
-  });
+          if (!isShuffle) {
+             originalQueue = [...queue];
+          }
+          renderQueue();
+        },
+      });
+  }
 }
 
 function createQueueItem(song, index) {
@@ -1781,6 +1801,7 @@ async function playSong(index, list = currentList) {
   if (!song) return;
 
   queue = [...list];
+  originalQueue = [...list];
   currentSong = index;
   await playSongFromQueue(currentSong, true);
   renderQueue();
@@ -1810,15 +1831,45 @@ async function playSongFromQueue(index, forcePlay = false) {
     const fadeOutPromise = isPlaying ? fadeVolume(0, fadeDuration) : Promise.resolve();
     
     const quality = "LOSSLESS";
-    const fetchPromise = apiFetch("/track/", {
-      id: song.id,
-      quality: quality,
-    })
-    .then(res => res.json())
-    .catch(err => {
-        console.error("Fetch failed", err);
-        return null;
-    });
+    if (song.id === prefetchedTrackId && nextTrackUrl) {
+         console.log("Using prefetched URL");
+         audio.src = nextTrackUrl;
+
+         nextTrackUrl = null;
+         prefetchedTrackId = null;
+
+    } else {
+
+        const fetchPromise = apiFetch("/track/", {
+          id: song.id,
+          quality: quality,
+        })
+        .then(res => res.json())
+        .catch(err => {
+            console.error("Fetch failed", err);
+            return null;
+        });
+    
+        const [_, streamData] = await Promise.all([fadeOutPromise, fetchPromise]);
+        
+        if (loadingTrackToast) loadingTrackToast.remove();
+        loadingTrackToast = null;
+    
+        if (!streamData) throw new Error("Failed to fetch stream data");
+    
+        updateEffectiveVolume();
+        console.log(streamData.data.manifest);
+        let audioManifest = streamData.data.manifest;
+        let binaryString = atob(audioManifest);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const utf8String = new TextDecoder().decode(bytes);
+        const audioObject = JSON.parse(utf8String);
+    
+        audio.src = audioObject.urls[0];
+    }
 
     if (currentUser) {
         PlayerActions.addToRecentlyPlayed(window.db, currentUser, song).then(updatedHistory => {
@@ -1826,28 +1877,8 @@ async function playSongFromQueue(index, forcePlay = false) {
                 recentlyPlayed = updatedHistory;
                 renderSearchHistory();
             }
-        });
+        }).catch(err => console.error("Error updating history:", err));
     }
-
-    const [_, streamData] = await Promise.all([fadeOutPromise, fetchPromise]);
-    
-    if (loadingTrackToast) loadingTrackToast.remove();
-    loadingTrackToast = null;
-
-    if (!streamData) throw new Error("Failed to fetch stream data");
-
-    updateEffectiveVolume();
-    console.log(streamData.data.manifest);
-    let audioManifest = streamData.data.manifest;
-    let binaryString = atob(audioManifest);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const utf8String = new TextDecoder().decode(bytes);
-    const audioObject = JSON.parse(utf8String);
-
-    audio.src = audioObject.urls[0];
     
     let statsText = quality;
     document.getElementById("qualityLabel").textContent = statsText;
@@ -2005,6 +2036,64 @@ async function playSongFromQueue(index, forcePlay = false) {
   }
 }
 
+let nextTrackUrl = null;
+let prefetchedTrackId = null;
+let isPrefetching = false;
+
+async function prefetchNextTrack() {
+
+    let nextIndex = currentSong + 1;
+    
+    if (repeatMode === 'one') return;
+    
+    if (isShuffle && queue.length > 1) {
+        return; 
+    }
+    
+    if (nextIndex >= queue.length) {
+        if (repeatMode === 'all') nextIndex = 0;
+        else return; 
+    }
+    
+    const nextSong = queue[nextIndex];
+    if (!nextSong || nextSong.id === prefetchedTrackId) return;
+    
+    console.log(`Prefetching next track: ${nextSong.title}`);
+    isPrefetching = true;
+    
+    try {
+        const quality = "LOSSLESS"; 
+        const response = await apiFetch("/track/", {
+          id: nextSong.id,
+          quality: quality,
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.data && data.data.manifest) {
+                let audioManifest = data.data.manifest;
+                let binaryString = atob(audioManifest);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                  bytes[i] = binaryString.charCodeAt(i);
+                }
+                const utf8String = new TextDecoder().decode(bytes);
+                const audioObject = JSON.parse(utf8String);
+                
+                if (audioObject.urls && audioObject.urls.length > 0) {
+                    nextTrackUrl = audioObject.urls[0];
+                    prefetchedTrackId = nextSong.id;
+                    console.log(`Successfully prefetched ${nextSong.title}`);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Prefetch failed", err);
+    } finally {
+        isPrefetching = false;
+    }
+}
+
 async function initWebAudio() {
   try {
     audioCtx = new AudioContext();
@@ -2081,7 +2170,7 @@ if (closePcFullscreenBtn) closePcFullscreenBtn.addEventListener('click', toggleP
 if (pcFsPlayPauseBtn) pcFsPlayPauseBtn.addEventListener('click', window.togglePlay);
 if (pcFsPrevBtn) pcFsPrevBtn.addEventListener('click', () => prevBtn.click());
 if (pcFsNextBtn) pcFsNextBtn.addEventListener('click', () => nextBtn.click());
-if (pcFsShuffleBtn) pcFsShuffleBtn.addEventListener('click', toggleShuffleMode);
+if (pcFsShuffleBtn) pcFsShuffleBtn.addEventListener('click', window.toggleShuffle);
 if (pcFsRepeatBtn) pcFsRepeatBtn.addEventListener('click', toggleRepeatMode);
 
 let isPcFsDragging = false;
@@ -2205,15 +2294,7 @@ if (document.getElementById("pcFsFavoriteBtn")) {
 window.playNextSong = function() {
   if (navigator.vibrate) navigator.vibrate(10);
   if (queue.length > 0) {
-    if (isShuffle && queue.length > 1) {
-        let nextIndex;
-        do {
-            nextIndex = Math.floor(Math.random() * queue.length);
-        } while (nextIndex === currentSong);
-        playSongFromQueue(nextIndex);
-    } else {
-        playSongFromQueue((currentSong + 1) % queue.length);
-    }
+      playSongFromQueue((currentSong + 1) % queue.length);
   }
 };
 
@@ -2234,34 +2315,71 @@ window.seek = function(percent) {
     }
 };
 
+let originalQueue = [];
+
 window.toggleShuffle = function() {
   if (queue.length <= 1) return;
 
-  const currentSongItem = queue[currentSong];
-  const remainingSongs = queue.filter((_, index) => index !== currentSong);
+  if (isShuffle) {
+     isShuffle = false;
+     
+     const currentTrack = queue[currentSong];
+     
+     if (originalQueue && originalQueue.length > 0) {
+         queue = [...originalQueue];
+     } else {
+     }
+     
+     const newIndex = queue.findIndex(t => t.id === currentTrack.id);
+     currentSong = newIndex !== -1 ? newIndex : 0;
+     
+  } else {
+     isShuffle = true;
+     
+     if (!originalQueue || originalQueue.length === 0) {
+         originalQueue = [...queue];
+     } else {
+         originalQueue = [...queue];
+     }
 
-  for (let i = remainingSongs.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [remainingSongs[i], remainingSongs[j]] = [
-      remainingSongs[j],
-      remainingSongs[i],
-    ];
+     const currentSongItem = queue[currentSong];
+     const remainingSongs = queue.filter((_, index) => index !== currentSong);
+
+     for (let i = remainingSongs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [remainingSongs[i], remainingSongs[j]] = [remainingSongs[j], remainingSongs[i]];
+     }
+
+     queue = [currentSongItem, ...remainingSongs];
+     currentSong = 0;
   }
 
-  queue = [currentSongItem, ...remainingSongs];
-  currentSong = 0;
   renderQueue();
+  updateShuffleButtonState();
+};
+
+function updateShuffleButtonState() {
+  const colorClass = "text-blue-400";
   
   if (shuffleBtn) {
-      shuffleBtn.classList.add("text-blue-400");
-      setTimeout(() => shuffleBtn.classList.remove("text-blue-400"), 200);
+      if (isShuffle) {
+          shuffleBtn.classList.add(colorClass); 
+
+      } else {
+          shuffleBtn.classList.remove(colorClass);
+      }
   }
   const fsShuffleBtn = document.getElementById("fsShuffleBtn");
   if (fsShuffleBtn) {
-       fsShuffleBtn.classList.add("text-blue-400");
-       setTimeout(() => fsShuffleBtn.classList.remove("text-blue-400"), 200);
+       if (isShuffle) fsShuffleBtn.classList.add(colorClass);
+       else fsShuffleBtn.classList.remove(colorClass);
   }
-};
+  const pcFsShuffleBtn = document.getElementById("pcFsShuffleBtn");
+  if (pcFsShuffleBtn) {
+       if (isShuffle) pcFsShuffleBtn.classList.add(colorClass);
+       else pcFsShuffleBtn.classList.remove(colorClass);
+  }
+}
 
 shuffleBtn.addEventListener("click", window.toggleShuffle);
 
@@ -2319,6 +2437,11 @@ audio.addEventListener("timeupdate", () => {
     }
     
   }
+    
+    if (!isDragging && audio.duration && (audio.currentTime > audio.duration - 15) && !nextTrackUrl && !isPrefetching) {
+        prefetchNextTrack();
+    }
+    
     updateDynamicStats();
 });
 
@@ -3010,13 +3133,13 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                     </div>
 
                     <div class="hidden sm:flex items-center gap-2">
-                        <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400" title="${isFav ? 'remove from favorites' : 'add to favorites'}">
+                        <button class="favorite-btn rounded-full p-2 transition-colors ${isFav ? 'text-red-400' : 'text-gray-400'} hover:text-red-400 cursor-pointer" title="${isFav ? 'remove from favorites' : 'add to favorites'}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                             </svg>
                         </button>
                         
-                        <button class="context-menu-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white" title="Current track options" onclick="showTrackContextMenu(event, '${track.id}')">
+                        <button class="context-menu-btn rounded-full p-2 text-gray-400 transition-colors hover:text-white cursor-pointer" title="Current track options" onclick="showTrackContextMenu(event, '${track.id}')">
                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="12" cy="12" r="1"></circle>
                                 <circle cx="19" cy="12" r="1"></circle>
@@ -3730,6 +3853,13 @@ function getTrackById(id) {
     if (typeof currentAlbumTracks !== 'undefined' && currentAlbumTracks) {
          const found = currentAlbumTracks.find(t => t.id == id);
          if (found) return found;
+    }
+    if (typeof currentPlaylistIndex !== 'undefined' && currentPlaylistIndex !== null && userPlaylists[currentPlaylistIndex]) {
+         const pl = userPlaylists[currentPlaylistIndex];
+         if (pl && pl.tracks) {
+             const found = pl.tracks.find(t => t.id == id);
+             if (found) return found;
+         }
     }
     return null;
 }
