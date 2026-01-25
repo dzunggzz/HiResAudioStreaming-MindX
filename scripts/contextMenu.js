@@ -29,25 +29,25 @@ document.addEventListener('contextmenu', (e) => {
         title = track.title;
         subtitle = track.artist.name;
         menuItems = `
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-play-next">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-play-next">
                 <i data-lucide="play" class="w-4 h-4"></i> Play Next
             </button>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-add-queue">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-add-queue">
                 <i data-lucide="list-plus" class="w-4 h-4"></i> Add to Queue
             </button>
             <div class="h-px bg-white/10 my-1 mx-2"></div>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-favorite">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-favorite">
                 <i data-lucide="heart" class="w-4 h-4 ${window.isFavorite && window.isFavorite(track) ? 'fill-current text-red-500' : ''}"></i> 
                 ${window.isFavorite && window.isFavorite(track) ? 'Remove from Favorites' : 'Add to Favorites'}
             </button>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist">
                 <i data-lucide="plus-square" class="w-4 h-4"></i> Add to Playlist
             </button>
             <div class="h-px bg-white/10 my-1 mx-2"></div>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-artist">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-artist">
                 <i data-lucide="user" class="w-4 h-4"></i> Go to Artist
             </button>
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album">
                 <i data-lucide="disc" class="w-4 h-4"></i> Go to Album
             </button>
         `;
@@ -57,10 +57,10 @@ document.addEventListener('contextmenu', (e) => {
         subtitle = albumCard.querySelector('p')?.textContent || "Artist";
         
         menuItems = `
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-play">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-play">
                 <i data-lucide="play" class="w-4 h-4"></i> Play Album
             </button>
-             <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-open">
+             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-open">
                 <i data-lucide="disc" class="w-4 h-4"></i> View Album
             </button>
         `;
@@ -70,7 +70,7 @@ document.addEventListener('contextmenu', (e) => {
         subtitle = "Artist";
         
         menuItems = `
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-artist-open">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-artist-open">
                 <i data-lucide="user" class="w-4 h-4"></i> View Artist
             </button>
         `;
@@ -80,10 +80,10 @@ document.addEventListener('contextmenu', (e) => {
         subtitle = playlistCard.querySelector('p')?.textContent || "";
         
         menuItems = `
-            <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-play">
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-play">
                 <i data-lucide="play" class="w-4 h-4"></i> Play Playlist
             </button>
-             <button class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-delete">
+             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-delete">
                 <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i> Delete Playlist
             </button>
         `;

@@ -278,6 +278,7 @@ class AmLyrics extends i {
         this.isLoading = true;
         this.lyrics = undefined;
         this.lyricsSource = null;
+        this.dispatchEvent(new CustomEvent('lyrics-loading', { bubbles: true, composed: true }));
         try {
             const resolvedMetadata = await this.resolveSongMetadata();
             const isMusicIdOnlyRequest = Boolean(this.musicId) &&
@@ -290,6 +291,7 @@ class AmLyrics extends i {
                     this.lyrics = youLyResult.lines;
                     this.lyricsSource = youLyResult.source ?? 'LyricsPlus (KPoe)';
                     this.onLyricsLoaded();
+                    this.dispatchEvent(new CustomEvent('lyrics-loaded', { bubbles: true, composed: true }));
                     return;
                 }
             }
@@ -298,6 +300,9 @@ class AmLyrics extends i {
         }
         finally {
             this.isLoading = false;
+            if (!this.lyrics) {
+                this.dispatchEvent(new CustomEvent('lyrics-failed', { bubbles: true, composed: true }));
+            }
         }
     }
     onLyricsLoaded() {

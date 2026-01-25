@@ -44,6 +44,7 @@ async function apiFetch(endpoint, params = {}) {
     }
   }
 
+  if (typeof showToast === 'function') showToast("Failed to connect to music server", "error");
   throw new Error("All API bases failed");
 }
 
@@ -151,7 +152,7 @@ function updateMediaSession(song) {
 
     navigator.mediaSession.setActionHandler('play', () => {
         if (typeof togglePlay === 'function') togglePlay(true);
-        else audio.play();
+        else audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
     });
     navigator.mediaSession.setActionHandler('pause', () => {
         if (typeof togglePlay === 'function') togglePlay(false);
@@ -522,7 +523,7 @@ function setupKeyboardShortcuts() {
                      isPlaying = false;
                      updatePlayButton(isPlaying);
                 } else {
-                     audio.play();
+                     audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
                      isPlaying = true;
                      updatePlayButton(isPlaying);
                      await fadeVolume(volumeSlider.value, 300);
@@ -1801,7 +1802,9 @@ async function playSongFromQueue(index, forcePlay = false) {
   }
 
   
+  let loadingTrackToast = null;
   try {
+    loadingTrackToast = typeof showToast === 'function' ? showToast(`Loading "${song.title}"...`, "loading") : null;
     const fadeDuration = userSettings.crossfadeEnabled ? userSettings.crossfadeDuration : 300;
 
     const fadeOutPromise = isPlaying ? fadeVolume(0, fadeDuration) : Promise.resolve();
@@ -1828,6 +1831,9 @@ async function playSongFromQueue(index, forcePlay = false) {
 
     const [_, streamData] = await Promise.all([fadeOutPromise, fetchPromise]);
     
+    if (loadingTrackToast) loadingTrackToast.remove();
+    loadingTrackToast = null;
+
     if (!streamData) throw new Error("Failed to fetch stream data");
 
     updateEffectiveVolume();
@@ -1905,11 +1911,24 @@ async function playSongFromQueue(index, forcePlay = false) {
              if (timestampMs !== undefined && !isNaN(timestampMs)) {
                   audio.currentTime = timestampMs / 1000;
                   if (audio.paused) {
-                      audio.play();
+                      audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
                       isPlaying = true;
                       updatePlayButton(true);
                   }
              }
+        });
+
+        let lyricsToast = null;
+        amLyricsElement.addEventListener('lyrics-loading', () => {
+             if (typeof showToast === 'function') lyricsToast = showToast("Loading lyrics...", "loading");
+        });
+        amLyricsElement.addEventListener('lyrics-loaded', () => {
+             if (lyricsToast) lyricsToast.remove();
+             if (typeof showToast === 'function') showToast("Lyrics loaded", "success");
+        });
+        amLyricsElement.addEventListener('lyrics-failed', () => {
+             if (lyricsToast) lyricsToast.remove();
+             if (typeof showToast === 'function') showToast("No lyrics found", "info");
         });
 
         if (amLyricsWrapper && amLyricsElement) {
@@ -1953,7 +1972,7 @@ async function playSongFromQueue(index, forcePlay = false) {
              if (timestampMs !== undefined && !isNaN(timestampMs)) {
                   audio.currentTime = timestampMs / 1000;
                   if (audio.paused) {
-                      audio.play();
+                      audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
                       isPlaying = true;
                       updatePlayButton(true);
                   }
@@ -1971,12 +1990,18 @@ async function playSongFromQueue(index, forcePlay = false) {
       await initWebAudio();
     }
 
-    audio.play();
+    audio.play().catch(e => {
+      if (e.name !== "AbortError") {
+        throw e;
+      }
+    });
     isPlaying = true;
     updatePlayButton(isPlaying);
     await fadeVolume(volumeSlider.value, fadeDuration);
   } catch (error) {
     console.error("Playback error:", error);
+    if (typeof loadingTrackToast !== 'undefined' && loadingTrackToast) loadingTrackToast.remove();
+    if (typeof showToast === 'function') showToast("Failed to play track", "error");
   }
 }
 
@@ -2014,7 +2039,7 @@ window.togglePlay = async function() {
     isPlaying = false;
     updatePlayButton(isPlaying);
   } else {
-    audio.play();
+    audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
     isPlaying = true;
     updatePlayButton(isPlaying);
     await fadeVolume(volumeSlider.value, 300);
@@ -2313,7 +2338,7 @@ audio.addEventListener("progress", () => {
 audio.addEventListener("ended", () => {
   if (repeatMode === "one") {
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(e => { if (e.name !== "AbortError") console.error(e); });
   } else if (repeatMode === "all") {
     nextBtn.click();
   } else {
@@ -2690,7 +2715,12 @@ async function showAlbumPage(album) {
     
 
 
+    const loadingToast = typeof showToast === 'function' ? showToast("Loading album details...", "loading") : null;
     await loadAlbumDetails(album.id);
+    if (loadingToast) {
+        loadingToast.remove()
+        if (typeof showToast === 'function') showToast("Album details loaded", "success");
+    };
 }
 
 async function loadAlbumDetails(albumId) {
@@ -2705,6 +2735,7 @@ async function loadAlbumDetails(albumId) {
     } catch (error) {
         console.error("Error loading album details:", error);
         document.getElementById("albumTracksGrid").innerHTML = '<p class="text-red-500 text-center py-8">Failed to load tracks.</p>';
+        if (typeof showToast === 'function') showToast("Failed to load album details", "error");
     }
 }
 
@@ -3169,13 +3200,21 @@ async function showArtistPage(artistId) {
     artistTopTracksPagination.innerHTML = "";
     artistDiscographyGrid.innerHTML = createSkeletonLoaders(1);
 
+    const loadingToast = typeof showToast === 'function' ? showToast("Loading artist data...", "loading") : null;
+
     try {
         const artistData = await loadArtist(artistId);
         renderArtistPage(artistData);
+        if (loadingToast) {
+            loadingToast.remove();
+            if (typeof showToast === 'function') showToast("Artist data loaded", "success");
+        };
     } catch (error) {
+        if (loadingToast) loadingToast.remove();
         console.error("Failed to load artist:", error);
         artistPageName.textContent = "Error loading artist";
         artistTopTracksGrid.innerHTML = `<div class="col-span-full text-center text-red-400 py-12">${error.message}</div>`;
+        if (typeof showToast === 'function') showToast("Failed to load artist data", "error");
     }
 }
 
@@ -3608,8 +3647,10 @@ async function createPlaylist(title, description = "") {
     const newPlaylist = await PlayerActions.createPlaylist(window.db, currentUser, title, description);
     userPlaylists.push(newPlaylist);
     displayMyPlaylists();
+    if (typeof showToast === 'function') showToast(`Playlist "${title}" created`, "success");
   } catch (error) {
     console.error("Error creating playlist:", error);
+    if (typeof showToast === 'function') showToast("Failed to create playlist", "error");
   }
 }
 
@@ -3626,12 +3667,13 @@ async function addTrackToPlaylist(playlistIndex, track) {
   try {
       const updatedPlaylist = await PlayerActions.addTrackToPlaylist(window.db, currentUser, playlist, track);
       userPlaylists[playlistIndex] = updatedPlaylist;
-      console.log(`Added "${track.title}" to "${playlist.title}"`);
+      if (typeof showToast === 'function') showToast(`Added to ${playlist.title}`, "success");
   } catch (error) {
       if (error.message === "Track already in playlist") {
-          alert("This track is already in the playlist!");
+          if (typeof showToast === 'function') showToast("This track is already in the playlist", "info");
       } else {
           console.error("Error adding track to playlist:", error);
+          if (typeof showToast === 'function') showToast("Failed to add to playlist", "error");
       }
   }
 }
@@ -3655,12 +3697,15 @@ async function toggleFavorite(track) {
      
      if (isAdded) {
          favorites.push(track);
+         if (typeof showToast === 'function') showToast("Added to Favorites", "success");
      } else {
          const index = favorites.findIndex((fav) => fav.id === track.id);
          if (index > -1) favorites.splice(index, 1);
+         if (typeof showToast === 'function') showToast("Removed from Favorites", "info");
      }
   } catch (error) {
     console.error("Error updating favorites:", error);
+    if (typeof showToast === 'function') showToast("Failed to update favorites", "error");
   }
 }
 
@@ -4136,8 +4181,12 @@ if (settingsLogoutBtn) {
     settingsLogoutBtn.addEventListener('click', () => {
        import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js").then(({ signOut }) => {
            signOut(window.auth).then(() => {
-                window.location.href = 'login.html';
-           }).catch(console.error);
+                if (typeof showToast === 'function') showToast("Logged out successfully", "success");
+                setTimeout(() => window.location.href = 'login.html', 1000);
+           }).catch((e) => {
+               console.error(e);
+               if (typeof showToast === 'function') showToast("Logout failed", "error");
+           });
        });
     });
 }
@@ -4551,3 +4600,82 @@ function updateFullscreenPlayerUI(song) {
         }
     }
 }
+
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+
+    let classes = 'toast-item flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-md shadow-lg min-w-[300px] max-w-sm transform transition-all duration-300 pointer-events-auto';
+    
+    let icon = '';
+    
+    switch(type) {
+        case 'success':
+            classes += ' bg-green-500/10 border-green-500/20 text-green-100';
+            icon = '<i data-lucide=\'check-circle\' class=\'w-5 h-5 text-green-400\'></i>';
+            break;
+        case 'error':
+            classes += ' bg-red-500/10 border-red-500/20 text-red-100';
+            icon = '<i data-lucide=\'alert-circle\' class=\'w-5 h-5 text-red-400\'></i>';
+            break;
+        case 'loading':
+            classes += ' bg-blue-500/10 border-blue-500/20 text-blue-100';
+            icon = '<i data-lucide=\'loader-2\' class=\'w-5 h-5 text-blue-400 animate-spin\'></i>';
+            duration = 0;
+            break;
+        default:
+            classes += ' bg-gray-800/90 border-white/10 text-gray-100';
+            icon = '<i data-lucide=\'info\' class=\'w-5 h-5 text-blue-400\'></i>';
+    }
+    
+    toast.className = classes;
+    
+    toast.innerHTML = `
+        <div class='flex-shrink-0'>${icon}</div>
+        <div class='flex-1 text-sm font-medium pt-[2px]'>${message}</div>
+        <button class='flex-shrink-0 text-white/40 hover:text-white transition-colors p-1 rounded-md hover:bg-white/5 ml-2' onclick='this.parentElement.remove()'>
+            <i data-lucide='x' class='w-4 h-4'></i>
+        </button>`
+    ;
+
+    if (duration > 0) {
+        const progressBar = document.createElement('div');
+        progressBar.className = 'absolute bottom-0 left-0 h-[2px] bg-white opacity-20 toast-progress rounded-b-xl';
+        progressBar.style.width = '100%';
+        progressBar.style.transition = `width \ms linear`;
+        toast.appendChild(progressBar);
+
+        setTimeout(() => {
+            progressBar.style.width = '0%';
+        }, 50);
+    }
+    
+    container.appendChild(toast);
+
+    if (window.lucide) {
+        window.lucide.createIcons({
+            root: toast
+        });
+    }
+
+    const remove = () => {
+        if (toast.classList.contains('exiting')) return;
+        toast.classList.add('exiting');
+        toast.addEventListener('animationend', () => {
+            if (toast.parentElement) toast.remove();
+        });
+    };
+
+    if (duration > 0) {
+        setTimeout(remove, duration);
+    }
+    
+    return {
+        element: toast,
+        remove: remove
+    };
+}
+
+window.showToast = showToast;

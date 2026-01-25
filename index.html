@@ -72,7 +72,7 @@
                 Try some Touhou music if you don't know what to listen to!
             </p>
             <button id="openSettingsBtn"
-                class="absolute top-4 right-4 flex items-center gap-2 rounded-full transition-colors bg-gray-800 hover:bg-gray-700 text-white border border-white/10 shadow-lg p-2"
+                class="cursor-pointer absolute top-4 right-4 flex items-center gap-2 rounded-full transition-colors bg-gray-800 hover:bg-gray-700 text-white border border-white/10 shadow-lg p-2"
                 title="Settings">
                 <div class="w-4 h-4 flex items-center justify-center">
                     <i data-lucide="settings" class="w-4 h-4"></i>
@@ -126,7 +126,7 @@
                         </div>
 
                         <button id="settingsKeyboardBtn"
-                            class="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left">
+                            class="cursor-pointer w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left">
                             <i data-lucide="keyboard" class="w-4 h-4"></i>
                             <span>Shortcuts</span>
                         </button>
@@ -154,7 +154,7 @@
                         <div class="h-px bg-white/5 my-1"></div>
 
                         <button id="settingsLogoutBtn"
-                            class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-left mt-1">
+                            class="cursor-pointer w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-left mt-1">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                             <span>Log Out</span>
                         </button>
@@ -479,7 +479,7 @@
         <div
             class="relative z-10 w-[35%] h-full flex flex-col justify-center items-left p-12 lg:p-16 border-r border-white/5">
             <button id="closePcFullscreenBtn"
-                class="absolute top-8 left-8 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors backdrop-blur-md border border-white/5">
+                class="cursor-pointer absolute top-8 left-8 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors backdrop-blur-md border border-white/5">
                 <i data-lucide="minimize-2" class="w-5 h-5 text-white"></i>
             </button>
 
@@ -1128,6 +1128,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script type="module" src="./scripts/contextMenu.js"></script>
     <script type="module" src="./scripts/API.js"></script>
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none p-4"></div>
 </body>
 
 </html>
