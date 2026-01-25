@@ -1,4 +1,4 @@
-import { g as a, a as o } from "./functions.697e57cd.js";
+import { g as f, a as o } from "./functions.52af3981.js";
 let p = () => ({
   events: {},
   emit(r, ...e) {
@@ -28,12 +28,16 @@ const u = [
   "peaking12",
   "peaking24",
   "notch12",
-  "notch24"
+  "notch24",
+  "allpass12",
+  "allpass24"
 ], g = [
   { type: "lowshelf12", frequency: 30, gain: 0, Q: 0.7, bypass: !1 },
   { type: "peaking12", frequency: 200, gain: 0, Q: 0.7, bypass: !1 },
   { type: "peaking12", frequency: 1e3, gain: 0, Q: 0.7, bypass: !1 },
   { type: "highshelf12", frequency: 5e3, gain: 0, Q: 0.7, bypass: !1 },
+  { type: "noop", frequency: 350, gain: 0, Q: 1, bypass: !1 },
+  { type: "noop", frequency: 350, gain: 0, Q: 1, bypass: !1 },
   { type: "noop", frequency: 350, gain: 0, Q: 1, bypass: !1 },
   { type: "noop", frequency: 350, gain: 0, Q: 1, bypass: !1 },
   { type: "noop", frequency: 350, gain: 0, Q: 1, bypass: !1 },
@@ -59,17 +63,17 @@ class b {
       if (!s)
         throw new Error("Assertion failed: No filters in filterbank");
       for (let n of s)
-        n.type = a(t);
+        n.type = f(t);
       let l = o(t);
       for (; s.length > l; ) {
-        let n = s.length - 1, h = s[n], f = s[n - 1], c = this.getNextInChain(e);
-        h.disconnect(), f.disconnect(h), f.connect(c), s.splice(n, 1);
+        let n = s.length - 1, h = s[n], a = s[n - 1], c = this.getNextInChain(e);
+        h.disconnect(), a.disconnect(h), a.connect(c), s.splice(n, 1);
       }
       for (; s.length < l; ) {
         let n = this.audioCtx.createBiquadFilter();
-        n.type = a(t), n.frequency.value = this.spec[e].frequency, n.Q.value = this.spec[e].Q, n.gain.value = this.spec[e].gain;
-        let h = s[s.length - 1], f = this.getNextInChain(e);
-        h.disconnect(f), h.connect(n), n.connect(f), s.push(n);
+        n.type = f(t), n.frequency.value = this.spec[e].frequency, n.Q.value = this.spec[e].Q, n.gain.value = this.spec[e].gain;
+        let h = s[s.length - 1], a = this.getNextInChain(e);
+        h.disconnect(a), h.connect(n), n.connect(a), s.push(n);
       }
     }
     this.emitter.emit("filtersChanged", this.spec);
@@ -88,7 +92,7 @@ class b {
   connectFilter(e, t) {
     let i = Array.from({ length: o(t) }, () => {
       let n = this.audioCtx.createBiquadFilter();
-      return n.type = a(t), n.frequency.value = this.spec[e].frequency, n.Q.value = this.spec[e].Q, n.gain.value = this.spec[e].gain, n;
+      return n.type = f(t), n.frequency.value = this.spec[e].frequency, n.Q.value = this.spec[e].Q, n.gain.value = this.spec[e].gain, n;
     }), s = this.getPreviousInChain(e), l = this.getNextInChain(e);
     s.disconnect(l), s.connect(i[0]);
     for (let n = 0; n < i.length - 1; n++)
@@ -131,7 +135,7 @@ class b {
         continue;
       let s = Array.from({ length: o(i.type) }, () => {
         let l = this.audioCtx.createBiquadFilter();
-        return l.type = a(i.type), l.frequency.value = i.frequency, l.Q.value = i.Q, l.gain.value = i.gain, l;
+        return l.type = f(i.type), l.frequency.value = i.frequency, l.Q.value = i.Q, l.gain.value = i.gain, l;
       });
       this.filterbank.push({ idx: t, filters: s });
     }

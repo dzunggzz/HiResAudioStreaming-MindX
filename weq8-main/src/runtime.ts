@@ -182,9 +182,9 @@ export class WEQ8Runtime {
     let filter = this.filterbank.find((f) => f.idx === idx);
     if (filter) {
       filter.filters[filterIdx].getFrequencyResponse(
-        frequencies,
-        magResponse,
-        phaseResponse
+        frequencies as any,
+        magResponse as any,
+        phaseResponse as any
       );
       return true;
     } else {

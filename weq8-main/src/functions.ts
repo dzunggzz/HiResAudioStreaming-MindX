@@ -26,7 +26,9 @@ export function filterHasQ(type: FilterType | "noop"): boolean {
     type === "peaking12" ||
     type === "peaking24" ||
     type === "notch12" ||
-    type === "notch24"
+    type === "notch24" ||
+    type === "allpass12" ||
+    type === "allpass24"
   );
 }
 
@@ -53,6 +55,9 @@ export function getBiquadFilterType(filterType: FilterType): BiquadFilterType {
     case "notch12":
     case "notch24":
       return "notch";
+    case "allpass12":
+    case "allpass24":
+      return "allpass";
   }
 }
 
@@ -69,6 +74,7 @@ export function getBiquadFilterOrder(
     case "highshelf12":
     case "peaking12":
     case "notch12":
+    case "allpass12":
       return 1;
     case "lowpass24":
     case "highpass24":
@@ -77,6 +83,7 @@ export function getBiquadFilterOrder(
     case "highshelf24":
     case "peaking24":
     case "notch24":
+    case "allpass24":
       return 2;
   }
 }

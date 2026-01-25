@@ -1,4 +1,4 @@
-import { a as Pe, f as F, b as we, c as A, d as _e, e as R, h as Ae, t as k, i as I } from "./functions.697e57cd.js";
+import { a as Pe, f as F, b as we, c as A, d as _e, e as R, h as Ae, t as k, i as I } from "./functions.52af3981.js";
 function p(n, e, t, i) {
   var s = arguments.length, r = s < 3 ? e : i === null ? i = Object.getOwnPropertyDescriptor(e, t) : i, a;
   if (typeof Reflect == "object" && typeof Reflect.decorate == "function")
@@ -286,21 +286,21 @@ const W = window, P = W.trustedTypes, ce = P ? P.createPolicy("lit-html", { crea
     let u, d, c = -1, y = 0;
     for (; y < o.length && (a.lastIndex = y, d = a.exec(o), d !== null); )
       y = a.lastIndex, a === D ? d[1] === "!--" ? a = ge : d[1] !== void 0 ? a = fe : d[2] !== void 0 ? (Ce.test(d[2]) && (s = RegExp("</" + d[2], "g")), a = _) : d[3] !== void 0 && (a = _) : a === _ ? d[0] === ">" ? (a = s != null ? s : D, c = -1) : d[1] === void 0 ? c = -2 : (c = a.lastIndex - d[2].length, u = d[1], a = d[3] === void 0 ? _ : d[3] === '"' ? ve : ye) : a === ve || a === ye ? a = _ : a === ge || a === fe ? a = D : (a = _, s = void 0);
-    const B = a === _ && n[l + 1].startsWith("/>") ? " " : "";
-    r += a === D ? o + De : c >= 0 ? (i.push(u), o.slice(0, c) + "$lit$" + o.slice(c) + w + B) : o + w + (c === -2 ? (i.push(void 0), l) : B);
+    const Q = a === _ && n[l + 1].startsWith("/>") ? " " : "";
+    r += a === D ? o + De : c >= 0 ? (i.push(u), o.slice(0, c) + "$lit$" + o.slice(c) + w + Q) : o + w + (c === -2 ? (i.push(void 0), l) : Q);
   }
   const h = r + (n[t] || "<?>") + (e === 2 ? "</svg>" : "");
   if (!Array.isArray(n) || !n.hasOwnProperty("raw"))
     throw Error("invalid template strings array");
   return [ce !== void 0 ? ce.createHTML(h) : h, i];
 };
-class M {
+class B {
   constructor({ strings: e, _$litType$: t }, i) {
     let s;
     this.parts = [];
     let r = 0, a = 0;
     const h = e.length - 1, l = this.parts, [o, u] = Ue(e, t);
-    if (this.el = M.createElement(o, i), C.currentNode = this.el.content, t === 2) {
+    if (this.el = B.createElement(o, i), C.currentNode = this.el.content, t === 2) {
       const d = this.el.content, c = d.firstChild;
       c.remove(), d.append(...c.childNodes);
     }
@@ -312,8 +312,8 @@ class M {
             if (c.endsWith("$lit$") || c.startsWith(w)) {
               const y = u[a++];
               if (d.push(c), y !== void 0) {
-                const B = s.getAttribute(y.toLowerCase() + "$lit$").split(w), Y = /([.?@])?(.*)/.exec(y);
-                l.push({ type: 1, index: r, name: Y[2], strings: B, ctor: Y[1] === "." ? Ve : Y[1] === "?" ? Le : Y[1] === "@" ? Qe : K });
+                const Q = s.getAttribute(y.toLowerCase() + "$lit$").split(w), Y = /([.?@])?(.*)/.exec(y);
+                l.push({ type: 1, index: r, name: Y[2], strings: Q, ctor: Y[1] === "." ? Me : Y[1] === "?" ? ze : Y[1] === "@" ? Le : K });
               } else
                 l.push({ type: 6, index: r });
             }
@@ -353,7 +353,7 @@ function N(n, e, t = n, i) {
   const o = U(e) ? void 0 : e._$litDirective$;
   return (l == null ? void 0 : l.constructor) !== o && ((r = l == null ? void 0 : l._$AO) === null || r === void 0 || r.call(l, !1), o === void 0 ? l = void 0 : (l = new o(n), l._$AT(n, t, i)), i !== void 0 ? ((a = (h = t)._$Co) !== null && a !== void 0 ? a : h._$Co = [])[i] = l : t._$Cl = l), l !== void 0 && (e = N(n, l._$AS(n, e.values), l, i)), e;
 }
-class Me {
+class Be {
   constructor(e, t) {
     this.u = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
   }
@@ -371,7 +371,7 @@ class Me {
     for (; o !== void 0; ) {
       if (h === o.index) {
         let u;
-        o.type === 2 ? u = new Q(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new Be(a, this, e)), this.u.push(u), o = s[++l];
+        o.type === 2 ? u = new L(a, a.nextSibling, this, e) : o.type === 1 ? u = new o.ctor(a, o.name, o.strings, this, e) : o.type === 6 && (u = new Qe(a, this, e)), this.u.push(u), o = s[++l];
       }
       h !== (o == null ? void 0 : o.index) && (a = C.nextNode(), h++);
     }
@@ -383,7 +383,7 @@ class Me {
       i !== void 0 && (i.strings !== void 0 ? (i._$AI(e, i, t), t += i.strings.length - 2) : i._$AI(e[t])), t++;
   }
 }
-class Q {
+class L {
   constructor(e, t, i, s) {
     var r;
     this.type = 2, this._$AH = g, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = i, this.options = s, this._$Cm = (r = s == null ? void 0 : s.isConnected) === null || r === void 0 || r;
@@ -417,24 +417,24 @@ class Q {
   }
   $(e) {
     var t;
-    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = M.createElement(s.h, this.options)), s);
+    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = B.createElement(s.h, this.options)), s);
     if (((t = this._$AH) === null || t === void 0 ? void 0 : t._$AD) === r)
       this._$AH.p(i);
     else {
-      const a = new Me(r, this), h = a.v(this.options);
+      const a = new Be(r, this), h = a.v(this.options);
       a.p(i), this.T(h), this._$AH = a;
     }
   }
   _$AC(e) {
     let t = be.get(e.strings);
-    return t === void 0 && be.set(e.strings, t = new M(e)), t;
+    return t === void 0 && be.set(e.strings, t = new B(e)), t;
   }
   k(e) {
     Fe(this._$AH) || (this._$AH = [], this._$AR());
     const t = this._$AH;
     let i, s = 0;
     for (const r of e)
-      s === t.length ? t.push(i = new Q(this.O(H()), this.O(H()), this, this.options)) : i = t[s], i._$AI(r), s++;
+      s === t.length ? t.push(i = new L(this.O(H()), this.O(H()), this, this.options)) : i = t[s], i._$AI(r), s++;
     s < t.length && (this._$AR(i && i._$AB.nextSibling, s), t.length = s);
   }
   _$AR(e = this._$AA.nextSibling, t) {
@@ -476,7 +476,7 @@ class K {
     e === g ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e != null ? e : "");
   }
 }
-class Ve extends K {
+class Me extends K {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -484,16 +484,16 @@ class Ve extends K {
     this.element[this.name] = e === g ? void 0 : e;
   }
 }
-const ze = P ? P.emptyScript : "";
-class Le extends K {
+const Ve = P ? P.emptyScript : "";
+class ze extends K {
   constructor() {
     super(...arguments), this.type = 4;
   }
   j(e) {
-    e && e !== g ? this.element.setAttribute(this.name, ze) : this.element.removeAttribute(this.name);
+    e && e !== g ? this.element.setAttribute(this.name, Ve) : this.element.removeAttribute(this.name);
   }
 }
-class Qe extends K {
+class Le extends K {
   constructor(e, t, i, s, r) {
     super(e, t, i, s, r), this.type = 5;
   }
@@ -509,7 +509,7 @@ class Qe extends K {
     typeof this._$AH == "function" ? this._$AH.call((i = (t = this.options) === null || t === void 0 ? void 0 : t.host) !== null && i !== void 0 ? i : this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class Be {
+class Qe {
   constructor(e, t, i) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = i;
   }
@@ -521,14 +521,14 @@ class Be {
   }
 }
 const $e = W.litHtmlPolyfillSupport;
-$e == null || $e(M, Q), ((ee = W.litHtmlVersions) !== null && ee !== void 0 ? ee : W.litHtmlVersions = []).push("2.4.0");
+$e == null || $e(B, L), ((ee = W.litHtmlVersions) !== null && ee !== void 0 ? ee : W.litHtmlVersions = []).push("2.4.0");
 const Ye = (n, e, t) => {
   var i, s;
   const r = (i = t == null ? void 0 : t.renderBefore) !== null && i !== void 0 ? i : e;
   let a = r._$litPart$;
   if (a === void 0) {
     const h = (s = t == null ? void 0 : t.renderBefore) !== null && s !== void 0 ? s : null;
-    r._$litPart$ = a = new Q(e.insertBefore(H(), h), h, void 0, t != null ? t : {});
+    r._$litPart$ = a = new L(e.insertBefore(H(), h), h, void 0, t != null ? t : {});
   }
   return a._$AI(n), a;
 };
@@ -809,21 +809,25 @@ const le = X`
   }
 `, Ie = [
   ["noop", "Add +"],
-  ["lowpass12", "LP12"],
-  ["lowpass24", "LP24"],
-  ["highpass12", "HP12"],
-  ["highpass24", "HP24"],
-  ["lowshelf12", "LS12"],
-  ["lowshelf24", "LS24"],
-  ["highshelf12", "HS12"],
-  ["highshelf24", "HS24"],
-  ["peaking12", "PK12"],
-  ["peaking24", "PK24"],
-  ["notch12", "NT12"],
-  ["notch24", "NT24"]
+  ["peaking12", "Bell 12dB"],
+  ["peaking24", "Bell 24dB"],
+  ["lowshelf12", "Low Shelf 12dB"],
+  ["lowshelf24", "Low Shelf 24dB"],
+  ["highshelf12", "High Shelf 12dB"],
+  ["highshelf24", "High Shelf 24dB"],
+  ["highpass12", "Low Cut 12dB"],
+  ["highpass24", "Low Cut 24dB"],
+  ["lowpass12", "High Cut 12dB"],
+  ["lowpass24", "High Cut 24dB"],
+  ["notch12", "Notch 12dB"],
+  ["notch24", "Notch 24dB"],
+  ["bandpass12", "Band Pass 12dB"],
+  ["bandpass24", "Band Pass 24dB"],
+  ["allpass12", "All Pass 12dB"],
+  ["allpass24", "All Pass 24dB"]
 ];
-var V;
-let O = (V = class extends q {
+var M;
+let O = (M = class extends q {
   constructor() {
     super(), this.frequencyInputFocused = !1, this.dragStates = { frequency: null, gain: null, Q: null }, this.addEventListener("click", () => this.dispatchEvent(new CustomEvent("select", { composed: !0, bubbles: !0 })));
   }
@@ -991,7 +995,7 @@ let O = (V = class extends q {
     }
   }
 }, (() => {
-  V.styles = [
+  M.styles = [
     le,
     X`
       :host {
@@ -1124,7 +1128,7 @@ let O = (V = class extends q {
       }
     `
   ];
-})(), V);
+})(), M);
 p([
   x({ attribute: !1 })
 ], O.prototype, "runtime", void 0);
@@ -1140,8 +1144,8 @@ p([
 O = p([
   oe("weq8-ui-filter-row")
 ], O);
-var z;
-let $ = (z = class extends q {
+var V;
+let $ = (V = class extends q {
   constructor() {
     super(...arguments), this.x = 0, this.y = 0, this.frequencyInputFocused = !1, this.dragStates = { frequency: null, gain: null, Q: null }, this.posOnDragStart = null;
   }
@@ -1303,7 +1307,7 @@ let $ = (z = class extends q {
     }
   }
 }, (() => {
-  z.styles = [
+  V.styles = [
     le,
     X`
       .root {
@@ -1411,7 +1415,7 @@ let $ = (z = class extends q {
       }
     `
   ];
-})(), z);
+})(), V);
 p([
   x({ attribute: !1 })
 ], $.prototype, "runtime", void 0);
@@ -1436,8 +1440,8 @@ p([
 $ = p([
   oe("weq8-ui-filter-hud")
 ], $);
-var L;
-let v = (L = class extends q {
+var z;
+let v = (z = class extends q {
   constructor() {
     super(), this.view = "allBands", this.gridXs = [], this.dragStates = {}, this.selectedFilterIdx = -1, this.addEventListener("click", (e) => {
       e.composedPath()[0] === this && (this.selectedFilterIdx = -1);
@@ -1500,7 +1504,7 @@ let v = (L = class extends q {
         </tr>
       </thead>
       <tbody>
-        ${Array.from({ length: 8 }).map((e, t) => m`<weq8-ui-filter-row
+        ${Array.from({ length: 10 }).map((e, t) => m`<weq8-ui-filter-row
               class="${f({ selected: this.selectedFilterIdx === t })}"
               .runtime=${this.runtime}
               .index=${t}
@@ -1599,7 +1603,7 @@ let v = (L = class extends q {
     }
   }
 }, (() => {
-  L.styles = [
+  z.styles = [
     le,
     X`
       :host {
@@ -1732,7 +1736,7 @@ let v = (L = class extends q {
       }
     `
   ];
-})(), L);
+})(), z);
 p([
   x({ attribute: !1 })
 ], v.prototype, "runtime", void 0);

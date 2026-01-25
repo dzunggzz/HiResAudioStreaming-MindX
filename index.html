@@ -915,18 +915,29 @@
 
 
     <div id="equalizerModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="modal-panel max-w-5xl w-full max-h-[80vh] flex flex-col">
+        <div class="modal-panel max-w-7xl w-full max-h-[80vh] flex flex-col">
             <div class="modal-header flex items-center justify-between p-5">
                 <h3 class="modal-title text-xl font-semibold text-white flex items-center gap-2">
                     <i data-lucide="sliders" class="w-5 h-5 text-blue-400"></i> Equalizer
                 </h3>
-                <button id="closeEqualizerModal" class="modal-icon-button" title="Close">
-                    <i data-lucide="x" class="w-[18px] h-[18px]"></i>
-                </button>
+                <div class="flex items-center gap-3">
+                     <select id="eqPresetSelect" class="cursor-pointer bg-gray-800 text-white text-sm rounded-lg px-3 py-1.5 border border-white/10 focus:outline-none focus:border-blue-500">
+                        <option value="flat">Flat</option>
+                        <option value="bass-boost">Bass Boost</option>
+                        <option value="bass-reduce">Bass Reduce</option>
+                        <option value="vocals">Bright Vocals</option>
+                        <option value="treble-boost">Treble Boost</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="acoustic">Acoustic</option>
+                     </select>
+                     <button id="closeEqualizerModal" class="modal-icon-button" title="Close">
+                        <i data-lucide="x" class="w-[18px] h-[18px]"></i>
+                     </button>
+                </div>
             </div>
             <div class="p-4">
                 <div id="equalizerContainer">
-                    <weq8-ui></weq8-ui>
+                    <weq8-ui class="p-4"></weq8-ui>
                 </div>
             </div>
         </div>
@@ -1071,6 +1082,7 @@
     <script type="module" src="./scripts/firebase.js"></script>
     <script type="module">
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { PlayerActions } from "./scripts/playerActions.js";
 
         onAuthStateChanged(window.auth, (user) => {
             if (!user) {
@@ -1122,8 +1134,44 @@
     <script type="module">
         import { WEQ8Runtime } from "./weq8-main/dist/runtime.js";
         import "./weq8-main/dist/ui.js";
+        import { applyPreset } from "./scripts/eqPresets.js";
 
         window.WEQ8Runtime = WEQ8Runtime;
+
+        document.addEventListener("DOMContentLoaded", () => {
+             const audio = document.getElementById("audio");
+             let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+             let audioSource;
+             try {
+                audioSource = audioCtx.createMediaElementSource(audio);
+             } catch (e) {
+                console.warn("MediaElementSource creation failed, might already exist", e);
+             }
+
+             const weq8 = new WEQ8Runtime(audioCtx);
+             
+             if (audioSource) {
+                 audioSource.connect(weq8.input);
+                 weq8.connect(audioCtx.destination);
+             }
+             const weq8Ui = document.querySelector("weq8-ui");
+             if (weq8Ui) {
+                 weq8Ui.runtime = weq8;
+             }
+             
+             const presetSelect = document.getElementById("eqPresetSelect");
+             if (presetSelect) {
+                 presetSelect.addEventListener("change", (e) => {
+                     applyPreset(weq8, e.target.value);
+                 });
+             }
+             
+             document.addEventListener('click', () => {
+                 if (audioCtx.state === 'suspended') {
+                     audioCtx.resume();
+                 }
+             }, { once: true });
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script type="module" src="./scripts/contextMenu.js"></script>

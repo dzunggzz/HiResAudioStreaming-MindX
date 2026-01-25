@@ -263,7 +263,7 @@ export class WEQ8UIElement extends LitElement {
         </tr>
       </thead>
       <tbody>
-        ${Array.from({ length: 8 }).map(
+        ${Array.from({ length: 10 }).map(
           (_, i) =>
             html`<weq8-ui-filter-row
               class="${classMap({ selected: this.selectedFilterIdx === i })}"
