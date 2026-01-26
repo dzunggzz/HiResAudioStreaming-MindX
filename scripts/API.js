@@ -1133,7 +1133,10 @@ function renderSearchHistory() {
                      </div>
                 </div>
                 <div class="w-full min-w-0">
-                    <h3 class="truncate font-medium text-white group-hover:text-blue-400 transition-colors">${song.title}</h3>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <h3 class="truncate font-medium text-white group-hover:text-blue-400 transition-colors">${song.title}</h3>
+                        ${song.explicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : ''}
+                    </div>
                     <p class="truncate text-sm text-gray-400">${song.artist.name}</p>
                 </div>
              `;
@@ -1274,6 +1277,9 @@ function createAlbumCard(album, extraClasses = "") {
     const artistName = album.artists && album.artists.length > 0 ? album.artists[0].name : "Unknown Artist";
     const releaseYear = album.releaseDate ? album.releaseDate.split("-")[0] : "";
 
+    const isExplicit = album.explicit;
+    const explicitBadge = isExplicit ? `<span class="flex-shrink-0 border border-gray-600/50 bg-gray-600/10 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : '';
+
     card.innerHTML = `
         <div class="relative mb-3 aspect-square w-full overflow-hidden rounded-lg bg-gray-900 shadow-lg group-hover:shadow-2xl transition-all duration-300">
             <img src="${imageUrl}" alt="${album.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
@@ -1284,9 +1290,12 @@ function createAlbumCard(album, extraClasses = "") {
             </div>
         </div>
         
-        <h3 class="truncate text-base font-medium text-white group-hover:text-blue-400 transition-colors">
-            ${album.title}
-        </h3>
+        <div class="flex items-center gap-2 min-w-0">
+             <h3 class="truncate text-base font-medium text-white group-hover:text-blue-400 transition-colors">
+                ${album.title}
+             </h3>
+             ${explicitBadge}
+        </div>
         <p class="truncate text-sm text-gray-400 mt-0.5">${artistName}</p>
         <p class="text-xs text-gray-500 mt-0.5 opacity-60">${releaseYear}</p>
     `;
@@ -1494,11 +1503,18 @@ function createTrackCard(song, index, list = currentList, options = {}) {
         </div>
     ` : '';
 
+    const explicitBadge = song.explicit ? 
+    `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : '';
+
   card.innerHTML = `
         ${trackNumberHtml}
         <img src="${imageUrl}" alt="${song.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg group-hover:shadow-2xl transition-shadow" loading="lazy" decoding="async">
         <div class="min-w-0 flex-1">
-            <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
+            <div class="flex items-center gap-2">
+                <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${song.title}</h3>
+                ${explicitBadge}
+            </div>
+            
             <a class="artist-link truncate text-sm text-gray-400 hover:text-white hover:underline inline-block mt-0.5 transition-colors relative z-10">${
               song.artist.name
             }</a>
@@ -1732,8 +1748,10 @@ function createQueueItem(song, index) {
             <span class="w-6 text-xs font-mono font-medium text-gray-500 group-hover:text-white text-center">${
               index + 1
             }</span>
-            <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium ${isCurrentSong ? 'text-blue-400' : 'text-white'}">${song.title}</p>
+                <div class="flex items-center gap-2 min-w-0">
+                    <p class="truncate text-sm font-medium ${isCurrentSong ? 'text-blue-400' : 'text-white'}">${song.title}</p>
+                    ${song.explicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : ''}
+                </div>
                 <a class="truncate text-xs text-gray-400 hover:text-white hover:underline inline-block mt-0.5">${
                   song.artist.name
                 }</a>
@@ -1888,7 +1906,10 @@ async function playSongFromQueue(index, forcePlay = false) {
       .join("/")}/320x320.jpg`;
     albumArt.src = albumCoverUrl;
 
-    songTitle.textContent = song.title;
+    const isExplicit = song.explicit;
+    const badge = isExplicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-white/60 ml-1" title="Explicit">E</span>` : '';
+    songTitle.innerHTML = `<span class="truncate">${song.title}</span>${badge}`;
+    songTitle.className = "flex items-center gap-2 min-w-0 font-semibold text-white";
     
     songArtist.textContent = song.artist.name;
     songArtist.onclick = (e) => {
@@ -1970,7 +1991,10 @@ async function playSongFromQueue(index, forcePlay = false) {
 
     if (pcFsArt) pcFsArt.src = albumCoverUrl.replace('320x320', '640x640');
     if (pcFsBackground) pcFsBackground.src = albumCoverUrl.replace('320x320', '640x640');
-    if (pcFsTitle) pcFsTitle.textContent = song.title;
+    if (pcFsTitle) {
+         const badge = song.explicit ? `<span class="inline-flex items-center justify-center border border-gray-500/50 bg-gray-500/10 rounded-[3px] px-1.5 h-5 text-[0.6rem] font-bold text-white/60 align-middle ml-2" style="vertical-align: middle;" title="Explicit">E</span>` : '';
+         pcFsTitle.innerHTML = `${song.title}${badge}`;
+    }
     if (pcFsArtist) pcFsArtist.textContent = song.artist.name;
     if (pcFsAlbumTitle) pcFsAlbumTitle.textContent = song.album.title;
     
@@ -3131,8 +3155,10 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                     <span class="text-sm ${isCurrentlyPlaying ? 'text-blue-400 font-bold' : 'text-gray-500'}">${trackIndex + 1}</span>
                 </div>
                 <img src="${imageUrl}" alt="${track.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg">
-                <div class="min-w-0 flex-1">
-                    <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white'}">${track.title}</h3>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white'}">${track.title}</h3>
+                        ${track.explicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : ''}
+                    </div>
                     <p class="truncate text-sm text-gray-400 mt-0.5">${track.artist.name}</p>
                 </div>
                 <span class="text-sm text-gray-500 font-mono tracking-tighter">${formatTime(track.duration || 0)}</span>
@@ -3151,7 +3177,10 @@ function renderPlaylistTracks(playlist, playlistIndex, editMode) {
                 </div>
                 <img src="${imageUrl}" alt="${track.title}" class="h-16 w-16 rounded-lg object-cover shadow-lg group-hover:shadow-2xl transition-shadow">
                 <div class="min-w-0 flex-1">
-                    <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <h3 class="truncate font-medium text-base ${isCurrentlyPlaying ? 'text-blue-400' : 'text-white group-hover:text-blue-400'} transition-colors">${track.title}</h3>
+                        ${track.explicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : ''}
+                    </div>
                     <a class="artist-link cursor-pointer truncate text-sm text-gray-400 hover:text-white hover:underline inline-block mt-0.5 transition-colors relative z-10">${
                       track.artist.name
                     }</a>
@@ -4748,7 +4777,10 @@ function renderMobileQueue() {
             <img src="${cover}" class="w-10 h-10 rounded object-cover shadow-sm bg-gray-800">
             
             <div class="flex-1 min-w-0">
-                <h4 class="font-medium text-[15px] truncate leading-tight ${isCurrent ? 'text-blue-400' : 'text-gray-200 group-hover:text-white'}">${song.title}</h4>
+                <div class="flex items-center gap-2 min-w-0">
+                    <h4 class="font-medium text-[15px] truncate leading-tight ${isCurrent ? 'text-blue-400' : 'text-gray-200 group-hover:text-white'}">${song.title}</h4>
+                    ${song.explicit ? `<span class="flex-shrink-0 border border-gray-600 bg-gray-600/20 rounded-[3px] px-1 text-[0.6rem] leading-none py-0.5 text-gray-400" title="Explicit">E</span>` : ''}
+                </div>
                 <p class="text-xs text-gray-500 truncate mt-0.5 group-hover:text-gray-400">${song.artist.name}</p>
             </div>
             
@@ -4804,7 +4836,10 @@ function updateFullscreenPlayerUI(song) {
     const imgEl = document.getElementById("fsPlayerImage");
     const bgEl = document.getElementById("fsPlayerBg");
 
-    if (titleEl) titleEl.textContent = song.title || "Unknown Title";
+    if (titleEl) {
+         titleEl.innerHTML = `<span class="truncate">${song.title || "Unknown Title"}</span>${(song.explicit) ? '<span class="flex-shrink-0 border border-gray-500/50 bg-gray-500/10 rounded-[3px] px-1.5 py-0.5 text-[0.6rem] font-bold text-white/60" title="Explicit">E</span>' : ''}`;
+         titleEl.className = "flex items-center justify-center gap-2 min-w-0 text-2xl font-bold text-white mb-2";
+    }
     if (artistEl) artistEl.textContent = song.artist?.name || song.artist || "Unknown Artist";
     
     if (imgEl || bgEl) {
