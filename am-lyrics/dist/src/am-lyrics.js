@@ -1210,7 +1210,7 @@ class AmLyrics extends i {
                     'end'
                     ? 'singer-right'
                     : 'singer-left'}"
-            style="--alignment: ${line.alignment}; --delay: ${lineIndex * 0.05}s; animation-delay: var(--delay);"
+            style="margin-right:0px;--alignment: ${line.alignment}; --delay: ${lineIndex * 0.05}s; animation-delay: var(--delay);"
             @click=${() => this.handleLineClick(line)}
             tabindex="0"
             @keydown=${(e) => {
