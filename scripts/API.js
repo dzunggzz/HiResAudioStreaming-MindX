@@ -2923,9 +2923,40 @@ async function playAlbumContext(albumId) {
      }
 }
 
+async function shuffleAlbumContext(albumId) {
+     try {
+         const response = await apiFetch("/album/", { id: albumId });
+         const data = await response.json();
+         const items = data.data?.items || data.items || [];
+         const tracks = items.map(i => i.item).filter(t => t);
+         
+         if (tracks.length > 0) {
+             originalQueue = [...tracks];
+             
+             const shuffledTracks = [...tracks];
+             for (let i = shuffledTracks.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledTracks[i], shuffledTracks[j]] = [shuffledTracks[j], shuffledTracks[i]];
+             }
+             
+             queue = shuffledTracks;
+             isShuffle = true;
+             updateShuffleButtonState();
+             
+             currentSong = 0;
+             playSongFromQueue(currentSong, true);
+             renderQueue();
+         }
+     } catch (e) {
+         console.error("Error shuffling album context", e);
+     }
+}
+
 window.showAlbumPage = showAlbumPage;
 window.showArtistPage = showArtistPage;
 window.playAlbumContext = playAlbumContext;
+window.shuffleAlbumContext = shuffleAlbumContext;
+window.shufflePlaylist = shufflePlaylist;
 
 
 
@@ -2978,6 +3009,16 @@ function showPlaylistPage(playlist, index) {
     newPlayBtn.addEventListener("click", () => {
         if (playlist.tracks.length > 0) {
             playPlaylist(index);
+        }
+    });
+
+    const shuffleBtn = document.getElementById("shufflePlaylistPageBtn");
+    const newShuffleBtn = shuffleBtn.cloneNode(true);
+    shuffleBtn.parentNode.replaceChild(newShuffleBtn, shuffleBtn);
+
+    newShuffleBtn.addEventListener("click", () => {
+        if (playlist.tracks.length > 0) {
+            shufflePlaylist(index);
         }
     });
 
@@ -3437,6 +3478,49 @@ function renderArtistPage(artist) {
         });
     }
 
+    const playBtn = document.getElementById("playArtistPageBtn");
+    const shuffleBtn = document.getElementById("shuffleArtistPageBtn");
+    
+    const newPlayBtn = playBtn.cloneNode(true);
+    playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+    
+    const newShuffleBtn = shuffleBtn.cloneNode(true);
+    shuffleBtn.parentNode.replaceChild(newShuffleBtn, shuffleBtn);
+
+    newPlayBtn.addEventListener("click", () => {
+        if (artist.topTracks && artist.topTracks.length > 0) {
+             const tracks = artist.topTracks;
+             tracks.forEach(track => {
+                 if (!track.artist) track.artist = { id: artist.id, name: artist.name };
+             });
+             playSong(0, tracks);
+        }
+    });
+
+    newShuffleBtn.addEventListener("click", () => {
+        if (artist.topTracks && artist.topTracks.length > 0) {
+             const tracks = artist.topTracks;
+             tracks.forEach(track => {
+                 if (!track.artist) track.artist = { id: artist.id, name: artist.name };
+             });
+             
+             originalQueue = [...tracks];
+             const shuffled = [...tracks];
+             for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+             }
+             
+             queue = shuffled;
+             isShuffle = true;
+             updateShuffleButtonState();
+             
+             currentSong = 0;
+             playSongFromQueue(currentSong, true);
+             renderQueue();
+        }
+    });
+
     if (artist.topTracks.length === 0) {
         artistTopTracksGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">No top tracks available.</div>';
     } else {
@@ -3677,6 +3761,27 @@ function playPlaylist(index) {
   if (!playlist || !playlist.tracks.length) return;
 
   queue = [...playlist.tracks];
+  currentSong = 0;
+  playSongFromQueue(currentSong, true);
+  renderQueue();
+}
+
+async function shufflePlaylist(index) {
+  const playlist = userPlaylists[index];
+  if (!playlist || !playlist.tracks.length) return;
+
+  originalQueue = [...playlist.tracks];
+
+  const tracks = [...playlist.tracks];
+  for (let i = tracks.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+  }
+
+  queue = tracks;
+  isShuffle = true;
+  updateShuffleButtonState();
+  
   currentSong = 0;
   playSongFromQueue(currentSong, true);
   renderQueue();

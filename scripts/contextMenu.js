@@ -60,6 +60,9 @@ document.addEventListener('contextmenu', (e) => {
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-play">
                 <i data-lucide="play" class="w-4 h-4"></i> Play Album
             </button>
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-shuffle">
+                <i data-lucide="shuffle" class="w-4 h-4"></i> Shuffle Album
+            </button>
              <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-open">
                 <i data-lucide="disc" class="w-4 h-4"></i> View Album
             </button>
@@ -82,6 +85,9 @@ document.addEventListener('contextmenu', (e) => {
         menuItems = `
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-play">
                 <i data-lucide="play" class="w-4 h-4"></i> Play Playlist
+            </button>
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-shuffle">
+                <i data-lucide="shuffle" class="w-4 h-4"></i> Shuffle Playlist
             </button>
              <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-playlist-delete">
                 <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i> Delete Playlist
@@ -179,6 +185,10 @@ document.addEventListener('contextmenu', (e) => {
              if (window.playAlbumContext) window.playAlbumContext(albumId);
              closeMenu();
         };
+        if (menu.querySelector('#ctx-album-shuffle')) menu.querySelector('#ctx-album-shuffle').onclick = () => {
+             if (window.shuffleAlbumContext) window.shuffleAlbumContext(albumId);
+             closeMenu();
+        };
         if (menu.querySelector('#ctx-album-open')) menu.querySelector('#ctx-album-open').onclick = () => {
              albumCard.click();
              closeMenu();
@@ -193,6 +203,10 @@ document.addEventListener('contextmenu', (e) => {
         const index = parseInt(playlistCard.dataset.playlistIndex);
         if (menu.querySelector('#ctx-playlist-play')) menu.querySelector('#ctx-playlist-play').onclick = () => {
              if (window.playPlaylist) window.playPlaylist(index);
+             closeMenu();
+        };
+        if (menu.querySelector('#ctx-playlist-shuffle')) menu.querySelector('#ctx-playlist-shuffle').onclick = () => {
+             if (window.shufflePlaylist) window.shufflePlaylist(index);
              closeMenu();
         };
         if (menu.querySelector('#ctx-playlist-delete')) menu.querySelector('#ctx-playlist-delete').onclick = () => {
