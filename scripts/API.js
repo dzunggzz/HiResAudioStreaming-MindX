@@ -4685,8 +4685,8 @@ if (fsLyricsBtn) {
              infoContainer.classList.remove("mt-4", "mb-6", "text-center");
              infoContainer.classList.add("m-0", "text-left", "flex-1");
              
-             titleEl.classList.remove("text-2xl", "mb-2", "text-center");
-             titleEl.classList.add("text-lg", "mb-0", "text-left");
+             titleEl.classList.remove("text-2xl", "mb-2", "text-center", "justify-center");
+             titleEl.classList.add("text-lg", "mb-0", "text-left", "justify-left");
              
              artistEl.classList.remove("text-lg", "text-center");
              artistEl.classList.add("text-sm", "text-left");
