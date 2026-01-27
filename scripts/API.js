@@ -1703,6 +1703,7 @@ function renderQueue() {
 
   queue.forEach((song, index) => {
     const li = createQueueItem(song, index);
+    li.classList.add("flex", "flex-row")
     ul.appendChild(li);
   });
 
