@@ -86,7 +86,7 @@ const KPOE_SERVERS = [
     'https://lyricsplus.onrender.com',
     'https://lyricsplus.prjktla.online',
 ];
-const DEFAULT_KPOE_SOURCE_ORDER = 'musixmatch,musixmatch-word,lyricsplus,apple,spotify';
+const DEFAULT_KPOE_SOURCE_ORDER = 'apple,musixmatch,musixmatch-word,lyricsplus,spotify';
 class AmLyrics extends i {
     constructor() {
         super();

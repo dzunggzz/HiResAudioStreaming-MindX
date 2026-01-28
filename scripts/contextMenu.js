@@ -35,6 +35,9 @@ document.addEventListener('contextmenu', (e) => {
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-add-queue">
                 <i data-lucide="list-plus" class="w-4 h-4"></i> Add to Queue
             </button>
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-share-track">
+                <i data-lucide="share-2" class="w-4 h-4"></i> Share
+            </button>
             <div class="h-px bg-white/10 my-1 mx-2"></div>
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-favorite">
                 <i data-lucide="heart" class="w-4 h-4 ${window.isFavorite && window.isFavorite(track) ? 'fill-current text-red-500' : ''}"></i> 
@@ -63,6 +66,9 @@ document.addEventListener('contextmenu', (e) => {
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-shuffle">
                 <i data-lucide="shuffle" class="w-4 h-4"></i> Shuffle Album
             </button>
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-share-album">
+                <i data-lucide="share-2" class="w-4 h-4"></i> Share
+            </button>
              <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-album-open">
                 <i data-lucide="disc" class="w-4 h-4"></i> View Album
             </button>
@@ -75,6 +81,9 @@ document.addEventListener('contextmenu', (e) => {
         menuItems = `
             <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-artist-open">
                 <i data-lucide="user" class="w-4 h-4"></i> View Artist
+            </button>
+            <button class="cursor-pointer w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white flex items-center gap-3 transition-colors" id="ctx-share-artist">
+                <i data-lucide="share-2" class="w-4 h-4"></i> Share
             </button>
         `;
     } else if (playlistCard) {
@@ -151,6 +160,10 @@ document.addEventListener('contextmenu', (e) => {
             if (window.addToQueue) window.addToQueue(track);
             closeMenu();
         };
+        if (menu.querySelector('#ctx-share-track')) menu.querySelector('#ctx-share-track').onclick = () => {
+             if (window.shareContent) window.shareContent('track', track.id, track.title, track.artist.name);
+             closeMenu();
+        };
         if (menu.querySelector('#ctx-favorite')) menu.querySelector('#ctx-favorite').onclick = async () => {
             if (window.toggleFavorite) await window.toggleFavorite(track);
             closeMenu();
@@ -189,6 +202,10 @@ document.addEventListener('contextmenu', (e) => {
              if (window.shuffleAlbumContext) window.shuffleAlbumContext(albumId);
              closeMenu();
         };
+        if (menu.querySelector('#ctx-share-album')) menu.querySelector('#ctx-share-album').onclick = () => {
+            if (window.shareContent) window.shareContent('album', albumId, title, subtitle);
+            closeMenu();
+        };
         if (menu.querySelector('#ctx-album-open')) menu.querySelector('#ctx-album-open').onclick = () => {
              albumCard.click();
              closeMenu();
@@ -197,6 +214,10 @@ document.addEventListener('contextmenu', (e) => {
         const artistId = artistCard.dataset.artistId;
         if (menu.querySelector('#ctx-artist-open')) menu.querySelector('#ctx-artist-open').onclick = () => {
              artistCard.click();
+             closeMenu();
+        };
+        if (menu.querySelector('#ctx-share-artist')) menu.querySelector('#ctx-share-artist').onclick = () => {
+             if (window.shareContent) window.shareContent('artist', artistId, title, subtitle);
              closeMenu();
         };
     } else if (playlistCard) {

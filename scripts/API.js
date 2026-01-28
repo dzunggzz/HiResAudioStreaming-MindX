@@ -2836,7 +2836,10 @@ function closeAlbumPage() {
     document.documentElement.style.overflow = "";
 }
 
+let currentAlbumId = null;
+
 async function showAlbumPage(album) {
+    currentAlbumId = album.id;
     const page = document.getElementById("albumPage");
     
     page.classList.remove("hidden");
@@ -2918,6 +2921,18 @@ function displayAlbumTracks(tracks) {
     
     const newShuffleBtn = shuffleBtn.cloneNode(true);
     shuffleBtn.parentNode.replaceChild(newShuffleBtn, shuffleBtn);
+
+    const shareBtn = document.getElementById("shareAlbumPageBtn");
+    const newShareBtn = shareBtn.cloneNode(true);
+    shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+
+    newShareBtn.addEventListener("click", () => {
+        if (currentAlbumId) {
+             const title = document.getElementById("albumPageTitle").textContent;
+             const artist = document.getElementById("albumPageArtist").textContent;
+             if (window.shareContent) window.shareContent('album', currentAlbumId, title, artist);
+        }
+    });
 
     newPlayBtn.addEventListener("click", () => {
         if (tracks.length > 0) {
@@ -3515,6 +3530,16 @@ function renderArtistPage(artist) {
     
     const newShuffleBtn = shuffleBtn.cloneNode(true);
     shuffleBtn.parentNode.replaceChild(newShuffleBtn, shuffleBtn);
+
+    const shareBtn = document.getElementById("shareArtistPageBtn");
+    const newShareBtn = shareBtn.cloneNode(true);
+    shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+
+    newShareBtn.addEventListener("click", () => {
+         if (artist) {
+             if (window.shareContent) window.shareContent('artist', artist.id, artist.name, 'Artist');
+         }
+    });
 
     newPlayBtn.addEventListener("click", () => {
         if (artist.topTracks && artist.topTracks.length > 0) {
@@ -4474,6 +4499,17 @@ if (fsOptionsBtn && fsOptionsModal) {
              if (title) title.textContent = song.title;
              if (artist) artist.textContent = song.artist.name;
              
+             if (artist) artist.textContent = song.artist.name;
+             
+             if (fsOptionShare) {
+                 fsOptionShare.onclick = () => {
+                     if (window.shareContent) {
+                         window.shareContent('track', song.id, song.title, song.artist.name);
+                     }
+                     fsOptionsModal.classList.add("translate-y-full");
+                 };
+             }
+
              if (fsOptionArtist) {
                  fsOptionArtist.onclick = () => {
                      fsOptionsModal.classList.add("translate-y-full");
@@ -4710,8 +4746,8 @@ if (fsLyricsBtn) {
              infoContainer.classList.add("mt-4", "mb-6", "text-center");
              infoContainer.classList.remove("m-0", "text-left", "flex-1");
              
-             titleEl.classList.add("text-2xl", "mb-2", "text-center");
-             titleEl.classList.remove("text-lg", "mb-0", "text-left");
+             titleEl.classList.add("text-2xl", "mb-2", "text-center", "justify-center");
+             titleEl.classList.remove("text-lg", "mb-0", "text-left", "justify-left");
              
              artistEl.classList.add("text-lg", "text-center");
              artistEl.classList.remove("text-sm", "text-left");
@@ -4949,3 +4985,88 @@ function showToast(message, type = 'info', duration = 3000) {
 }
 
 window.showToast = showToast;
+
+async function checkDeepLinks() {
+    const params = new URLSearchParams(window.location.search);
+    const trackId = params.get('track');
+    const albumId = params.get('album');
+    const artistId = params.get('artist');
+
+    if (trackId) {
+        if (typeof showToast === 'function') showToast("Loading shared track...", "loading");
+        try {
+             const response = await apiFetch("/info/", { id: trackId });
+             if (response.ok) {
+                 let data = await response.json();
+                 let track = null;
+
+                 if (data.data) {
+                     track = data.data;
+                 } else {
+                     track = data;
+                 }
+
+                 if (track && track.id) {
+
+                     if (!track.artist) track.artist = { name: "Unknown Artist", id: null };
+                     if (!track.album) track.album = { title: "Unknown Album", id: null, cover: track.album?.cover || "00000000-0000-0000-0000-000000000000" };
+
+                     if (track.album && !track.album.cover) track.album.cover = "00000000-0000-0000-0000-000000000000";
+
+                     if (window.addToQueue) {
+
+                         window.addToQueue(track);
+                         if (typeof playSongFromQueue === 'function') {
+                             playSongFromQueue(queue.length - 1, true);
+                         }
+                     } else {
+                         console.error("addToQueue not defined");
+                         if (typeof showToast === 'function') showToast("Error: Player not ready", "error");
+                     }
+                 } else {
+                     console.error("Invalid track data received:", data);
+                     if (typeof showToast === 'function') showToast("Failed to load track data", "error");
+                 }
+             } else {
+                 if (typeof showToast === 'function') showToast("Failed to fetch track info", "error");
+             }
+        } catch (e) {
+            console.error("Error handling deep link track:", e);
+             if (typeof showToast === 'function') showToast("Failed to load shared track", "error");
+        }
+    } else if (albumId) {
+        if (typeof showToast === 'function') showToast("Loading shared album...", "loading");
+        try {
+             const response = await apiFetch("/album/", { id: albumId });
+             if (response.ok) {
+                 const data = await response.json();
+                 let album = null;
+                 
+                 if (data.data) {
+                     if (data.data.id) album = data.data;
+                     else if (Array.isArray(data.data) && data.data.length > 0) album = data.data[0];
+                     else album = data.data;
+                 } else {
+                     album = data;
+                 }
+
+                 if (album && !album.title) {
+                     album = { id: albumId, title: "Shared Album", ...album };
+                 } else if (!album) {
+                     album = { id: albumId, title: "Shared Album" };
+                 }
+                 
+                 if (window.showAlbumPage) {
+                     window.showAlbumPage(album);
+                 }
+             }
+        } catch (e) {
+            console.error("Error handling deep link album:", e);
+             if (typeof showToast === 'function') showToast("Failed to load shared album", "error");
+        }
+    } else if (artistId) {
+        if (window.showArtistPage) window.showArtistPage(artistId);
+    }
+}
+
+setTimeout(checkDeepLinks, 1000);
