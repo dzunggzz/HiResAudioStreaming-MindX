@@ -1,6 +1,6 @@
 
 export async function shareContent(type, id, title, subtitle) {
-    const url = `${window.location.origin}/?${type}=${id}`;
+    const url = `${window.location.origin}${window.location.pathname}?${type}=${id}`;
     const shareData = {
         title: 'HiResAudioStreaming',
         text: `Check out ${title} by ${subtitle} on HiResAudioStreaming!`,
