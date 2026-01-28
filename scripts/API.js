@@ -2268,7 +2268,6 @@ function updatePlayButton(playing) {
 
     if (document.getElementById("pcFsPlayIcon")) {
         document.getElementById("pcFsPlayIcon").setAttribute("data-lucide", "play");
-        document.getElementById("pcFsPlayIcon").classList.add("ml-1");
     }
   }
   lucide.createIcons();
