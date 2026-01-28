@@ -102,11 +102,10 @@ class AmLyrics extends i {
         this.scrollTimeout = null;
         this.resizeObserver = null;
         this.isHovering = false;
-        this.downloadFormat = 'auto'; // Default format
+        this.downloadFormat = 'auto';
         this.viewOffset = 0;
-        this.alignmentMap = new Map(); // Store alignment per line
+        this.alignmentMap = new Map(); 
 
-        // Restore missing properties
         this.activeBackgroundWordIndices = new Map();
         this.backgroundWordProgress = new Map();
         this.lyricsSource = null;
@@ -116,8 +115,8 @@ class AmLyrics extends i {
         this.isUserScrolling = false;
         this.isProgrammaticScroll = false;
         
-        // this.translationEnabled = false; // Toggle state (REMOVED)
-        this.romanizationEnabled = false; // Experiment state
+
+        this.romanizationEnabled = true; // Experiment state
         
         // Initialize Kuromoji
         this.tokenizer = null;
@@ -149,16 +148,17 @@ class AmLyrics extends i {
     romanizeLyrics() {
         if (!this.lyrics) return;
         
-        // Translation check removed
-
-        // If Romanization is disabled, clear any existing translation
-        // (assuming the translation field is populated by Romaji or empty)
+        // If Romanization is disabled, clear any existing translation/romanization on syllables
         if (!this.romanizationEnabled) {
             let cleared = false;
             this.lyrics.forEach(line => {
-                if (line.translation) {
-                    line.translation = undefined;
-                    cleared = true;
+                if (line.text) {
+                     line.text.forEach(syl => {
+                         if (syl.romanization) {
+                             syl.romanization = undefined;
+                             cleared = true;
+                         }
+                     });
                 }
             });
             if (cleared) this.requestUpdate();
@@ -173,18 +173,23 @@ class AmLyrics extends i {
         
         // Iterate and mutate in place
         this.lyrics.forEach(line => {
-             // Only romanize if no translation exists and line has Japanese
-             if (!line.translation && line.text && line.text.some(s => JAPANESE_REGEX.test(s.text))) {
-                 const fullText = line.text.map(s => s.text).join('');
-                 const path = this.tokenizer.tokenize(fullText);
-                 const romaji = path.map(token => {
-                     return this.katakanaToRomaji(token.reading || token.surface_form);
-                 }).join(' ');
-                 
-                 const formatted = romaji.charAt(0).toUpperCase() + romaji.slice(1).toLowerCase();
-                 
-                 line.translation = formatted;
-                 needsUpdate = true;
+             // Process each syllable/word individually
+             if (line.text) {
+                 line.text.forEach(syl => {
+                     // Romanize if it has Japanese text and hasn't been romanized yet
+                     if (syl.text && JAPANESE_REGEX.test(syl.text) && !syl.romanization) {
+                         const path = this.tokenizer.tokenize(syl.text);
+                         const romaji = path.map(token => {
+                             return this.katakanaToRomaji(token.reading || token.surface_form);
+                         }).join(' ');
+                         
+                         // Simple formatting: lowercase
+                         if (romaji) {
+                             syl.romanization = romaji.toLowerCase();
+                             needsUpdate = true;
+                         }
+                     }
+                 });
              }
         });
         
@@ -1171,14 +1176,23 @@ class AmLyrics extends i {
                     else if (isWordPassed) {
                         progress = 1;
                     }
-                    return b `<span
+                    
+                    const romanization = syllable.romanization 
+                        ? b`<span class="romanization-word progress-text"
+                                style="--line-progress: ${progress * 100}%; --transition-style: ${isLineActive ? 'all' : 'color'}"
+                            >${syllable.romanization}</span>` 
+                        : '';
+                        
+                    return b `<span class="word-column">
+              ${romanization}
+              <span
               class="progress-text"
               style="--line-progress: ${progress *
                         100}%; margin-right: 0; --transition-style: ${isLineActive
                         ? 'all'
                         : 'color'}"
               >${syllable.text}</span
-            >`;
+            ></span>`;
                 })}
         </span>
         ${line.translation ? b`<div class="lyrics-translation">${line.translation}</div>` : ''}`;
@@ -1392,11 +1406,11 @@ class AmLyrics extends i {
     }
 
     .singer-right {
-      text-align: right;
-      align-items: flex-end; /* Flex alignment */
+      text-align: left;
+      align-items: flex-start; /* Flex alignment */
       display: flex;
       flex-direction: column;
-      margin-left: 0%; /* Push to right side */
+      margin-right: 0%; /* Keep to left side */
     }
 
     .singer-left {
@@ -1410,7 +1424,7 @@ class AmLyrics extends i {
     /* Mobile adjustments for duets */
     @media (max-width: 768px) {
         .singer-right {
-            margin-left: 10%;
+            margin-right: 10%;
         }
         .singer-left {
             margin-right: 10%;
@@ -1443,6 +1457,21 @@ class AmLyrics extends i {
     }
 
     /* Translation / Romanized Text */
+    .word-column {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-right: 4px; /* Space between words */
+      vertical-align: bottom; /* Align bottom of columns */
+    }
+    
+    .romanization-word {
+      font-size: 0.5em; /* Smaller than original */
+      margin-bottom: 2px;
+      opacity: 0.8;
+      line-height: 1;
+    }
+
     .lyrics-translation {
       display: block;
       font-size: 0.55em; /* Small */
