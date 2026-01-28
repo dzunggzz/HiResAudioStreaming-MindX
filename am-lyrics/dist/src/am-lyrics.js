@@ -191,6 +191,23 @@ class AmLyrics extends i {
                      }
                  });
              }
+             
+             // Process background text as well
+             if (line.backgroundText) {
+                 line.backgroundText.forEach(syl => {
+                     if (syl.text && JAPANESE_REGEX.test(syl.text) && !syl.romanization) {
+                         const path = this.tokenizer.tokenize(syl.text);
+                         const romaji = path.map(token => {
+                             return this.katakanaToRomaji(token.reading || token.surface_form);
+                         }).join(' ');
+                         
+                         if (romaji) {
+                             syl.romanization = romaji.toLowerCase();
+                             needsUpdate = true;
+                         }
+                     }
+                 });
+             }
         });
         
         if (needsUpdate) {
@@ -1142,14 +1159,22 @@ class AmLyrics extends i {
                         else if (isWordPassed) {
                             progress = 1;
                         }
-                        return b `<span
+                        const romanization = syllable.romanization 
+                            ? b`<span class="romanization-word progress-text"
+                                    style="--line-progress: ${progress * 100}%; --transition-style: ${isLineActive ? 'all' : 'color'}"
+                                >${syllable.romanization}</span>` 
+                            : '';
+
+                        return b `<span class="word-column">
+                  ${romanization}
+                  <span
                   class="progress-text"
                   style="--line-progress: ${progress *
                             100}%; margin-right: 0; --transition-style: ${isLineActive
                             ? 'all'
                             : 'color'}"
                   >${syllable.text}</span
-                >`;
+                ></span>`;
                     })}
             </span>`
                     : '';
@@ -1469,7 +1494,7 @@ class AmLyrics extends i {
       font-size: 0.5em; /* Smaller than original */
       margin-bottom: 2px;
       opacity: 0.8;
-      line-height: 1;
+      line-height: 1.2;
     }
 
     .lyrics-translation {
