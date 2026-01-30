@@ -4365,11 +4365,24 @@ if (romanizationToggle) {
         });
     });
 }
+const translationToggle = document.getElementById('translationToggle');
+if (translationToggle) {
+    translationToggle.checked = localStorage.getItem('translationEnabled') === 'true';
+    translationToggle.addEventListener('change', (e) => {
+        localStorage.setItem('translationEnabled', e.target.checked);
+        const allLyrics = document.querySelectorAll('am-lyrics');
+        allLyrics.forEach(lyrics => {
+            lyrics.translationEnabled = e.target.checked;
+        });
+    });
+}
 window.addEventListener('load', () => {
     const enabled = localStorage.getItem('romajiEnabled') === 'true';
+    const translationEnabled = localStorage.getItem('translationEnabled') === 'true';
     const allLyrics = document.querySelectorAll('am-lyrics');
     allLyrics.forEach(lyrics => {
         lyrics.romanizationEnabled = enabled;
+        lyrics.translationEnabled = translationEnabled;
     });
 });
 

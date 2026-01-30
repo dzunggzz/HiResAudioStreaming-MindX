@@ -114,9 +114,11 @@ class AmLyrics extends i {
         this.lastInstrumentalIndex = null;
         this.isUserScrolling = false;
         this.isProgrammaticScroll = false;
+        this.providerMode = 'auto';
         
 
         this.romanizationEnabled = true; // Experiment state
+        this.translationEnabled = true;
         
         // Initialize Kuromoji
         this.tokenizer = null;
@@ -139,11 +141,109 @@ class AmLyrics extends i {
             lyrics: { attribute: false },
             currentTime: { type: Number },
             duration: { type: Number },
-            romanizationEnabled: { type: Boolean }
+            romanizationEnabled: { type: Boolean },
+            translationEnabled: { type: Boolean },
+            providerMode: { type: String }
         };
     }
     
-    // translateLyrics removed
+    async translateLyrics() {
+         if (!this.lyrics || !this.translationEnabled || !window.puter) {
+             if (!this.translationEnabled && this.lyrics) {
+                 // Clear translations if disabled
+                 let cleared = false;
+                 this.lyrics.forEach(line => {
+                     if (line['aiTranslation']) {
+                         line['aiTranslation'] = undefined;
+                         cleared = true;
+                     }
+                 });
+                 if (cleared) this.requestUpdate();
+             }
+             return;
+         }
+
+         // Collect all lines to translate
+         const linesToTranslate = this.lyrics
+            .filter(line => !line.translation && !line['aiTranslation'] && line.text && line.text.length > 0)
+            .map(line => {
+                return line.text.map(syl => syl.text).join('');
+            });
+        
+         if (linesToTranslate.length === 0) return;
+
+         if (window.showToast) window.showToast("Translating lyrics...", "loading");
+
+         // Batch translation for better performance/context
+         // We'll do chunks of 20 lines to avoid hitting limits
+         const chunkSize = 20;
+         const chunks = [];
+         
+         // Map original indices to flattened list
+         const indexMap = [];
+         this.lyrics.forEach((line, idx) => {
+             if (!line.translation && !line['aiTranslation'] && line.text && line.text.length > 0) {
+                 indexMap.push(idx);
+             }
+         });
+
+         for (let i = 0; i < linesToTranslate.length; i += chunkSize) {
+             chunks.push(linesToTranslate.slice(i, i + chunkSize));
+         }
+
+         const songTitle = this.getAttribute('song-title') || 'Unknown Title';
+         const songArtist = this.getAttribute('song-artist') || 'Unknown Artist';
+
+         try {
+             let hasError = false;
+             await Promise.all(chunks.map(async (chunk, chunkIndex) => {
+                 const prompt = `Act as a professional translator and musicologist. Translate the following lyrics of "${songTitle}" by ${songArtist} to English.
+                                 
+                                 Style Preference: Keep the translation Poetic.
+                                 The 'Deep Dive': Identify and account for metaphors, double entendres, or cultural references.
+
+                                 Output EXACTLY one line of translation for each line of input. 
+                                 Do not add any extra text, numbering, or explanations. 
+                                 
+                                 Input: \n\n${chunk.join('\n')}`;
+                 
+                 try {
+                     const response = await puter.ai.chat(prompt, { model: 'gemini-3-flash-preview' });
+                     const translatedLines = response.message.content.split('\n').filter(l => l.trim() !== '');
+                     
+                     // Apply translations
+                     let needsUpdate = false;
+                     const startIndex = chunkIndex * chunkSize;
+                     
+                     translatedLines.forEach((transLine, i) => {
+                         if (i < chunk.length) {
+                             const globalIndex = indexMap[startIndex + i];
+                             if (this.lyrics[globalIndex]) {
+                                 this.lyrics[globalIndex]['aiTranslation'] = transLine.trim();
+                                 needsUpdate = true;
+                             }
+                         }
+                     });
+
+                     if (needsUpdate) {
+                         this.requestUpdate();
+                     }
+                 } catch (err) {
+                     console.error('Translation failed:', err);
+                     hasError = true;
+                 }
+             }));
+
+             if (hasError) {
+                 if (window.showToast) window.showToast("Some translations failed", "error");
+             } else {
+                 if (window.showToast) window.showToast("Translation complete", "success");
+             }
+         } catch (e) {
+             console.error("Critical translation error:", e);
+             if (window.showToast) window.showToast("Translation process failed", "error");
+         }
+    }
 
     romanizeLyrics() {
         if (!this.lyrics) return;
@@ -308,7 +408,13 @@ class AmLyrics extends i {
                 !this.songArtist &&
                 !this.query;
             if (resolvedMetadata?.metadata && !isMusicIdOnlyRequest) {
-                const youLyResult = await AmLyrics.fetchLyricsFromYouLyPlus(resolvedMetadata.metadata);
+                let sourceOrder = DEFAULT_KPOE_SOURCE_ORDER;
+                if (this.providerMode === 'apple') sourceOrder = 'apple';
+                else if (this.providerMode === 'musixmatch') sourceOrder = 'musixmatch,musixmatch-word';
+                else if (this.providerMode === 'spotify') sourceOrder = 'spotify';
+                else if (this.providerMode === 'lyricsplus') sourceOrder = 'lyricsplus';
+
+                const youLyResult = await AmLyrics.fetchLyricsFromYouLyPlus(resolvedMetadata.metadata, sourceOrder);
                 if (youLyResult && youLyResult.lines.length > 0) {
                     this.lyrics = youLyResult.lines;
                     this.lyricsSource = youLyResult.source ?? 'LyricsPlus (KPoe)';
@@ -485,7 +591,7 @@ class AmLyrics extends i {
         }
         return null;
     }
-    static async fetchLyricsFromYouLyPlus(metadata) {
+    static async fetchLyricsFromYouLyPlus(metadata, sourceOrder = DEFAULT_KPOE_SOURCE_ORDER) {
         const title = metadata.title?.trim();
         const artist = metadata.artist?.trim();
         if (!title || !artist) {
@@ -498,7 +604,7 @@ class AmLyrics extends i {
         if (metadata.durationMs && metadata.durationMs > 0) {
             params.append('duration', Math.round(metadata.durationMs / 1000).toString());
         }
-        params.append('source', DEFAULT_KPOE_SOURCE_ORDER);
+        params.append('source', sourceOrder);
         for (const base of KPOE_SERVERS) {
             const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
             const url = `${normalizedBase}/v2/lyrics/get?${params.toString()}`;
@@ -686,6 +792,9 @@ class AmLyrics extends i {
         
         if (changedProperties.has('lyrics') || changedProperties.has('romanizationEnabled')) {
              this.romanizeLyrics();
+        }
+        if (changedProperties.has('lyrics') || changedProperties.has('translationEnabled')) {
+             this.translateLyrics();
         }
         if ((changedProperties.has('query') ||
             changedProperties.has('musicId') ||
@@ -997,6 +1106,10 @@ class AmLyrics extends i {
             });
         }
     }
+    handleProviderChange(e) {
+        this.providerMode = e.target.value;
+        this.fetchLyrics();
+    }
     animateProgress() {
         const now = performance.now();
         let running = false;
@@ -1219,8 +1332,9 @@ class AmLyrics extends i {
               >${syllable.text}</span
             ></span>`;
                 })}
-        </span>
-        ${line.translation ? b`<div class="lyrics-translation">${line.translation}</div>` : ''}`;
+          </span>
+            ${line.translation ? b`<div class="lyrics-translation">${line.translation}</div>` : 
+              line['aiTranslation'] ? b`<div class="lyrics-translation ai-translated">${line['aiTranslation']}</div>` : ''}`;
                 let maybeInstrumentalBlock = null;
                 if (instrumental && instrumental.insertBeforeIndex === lineIndex) {
                     const remainingSeconds = Math.max(0, Math.ceil((instrumental.gapEnd - this.currentTime) / 1000));
@@ -1274,6 +1388,17 @@ class AmLyrics extends i {
             <footer class="lyrics-footer">
               <div class="footer-content">
                 <span class="source-info" style="opacity: 0.5;">Source: ${sourceLabel}</span>
+                <select 
+                    class="provider-select" 
+                    @change=${this.handleProviderChange.bind(this)} 
+                    style="background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.6); padding: 4px; border-radius: 4px; font-size: 0.9em; margin-left: 8px; cursor: pointer;"
+                >
+                    <option value="auto" ?selected=${this.providerMode === 'auto'} style="background: #333; color: white;">Auto</option>
+                    <option value="apple" ?selected=${this.providerMode === 'apple'} style="background: #333; color: white;">Apple Music</option>
+                    <option value="musixmatch" ?selected=${this.providerMode === 'musixmatch'} style="background: #333; color: white;">Musixmatch</option>
+                    <option value="spotify" ?selected=${this.providerMode === 'spotify'} style="background: #333; color: white;">Spotify</option>
+                    <option value="lyricsplus" ?selected=${this.providerMode === 'lyricsplus'} style="background: #333; color: white;">LyricsPlus</option>
+                </select>
                 <span style="margin: 0 8px; opacity: 0.3;">•</span>
                 <span class="version-info" style="opacity: 0.5;">v${VERSION}</span>
                 <br>
